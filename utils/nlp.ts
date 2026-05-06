@@ -237,6 +237,76 @@ function detectIntent(text: string): ParsedAction["intent"] {
   return "unknown";
 }
 
+// ============ RECEIPT / PASTED-TEXT PARSER ============
+
+export interface ParsedReceipt {
+  amount: number | null;
+  category: Category;
+  date: string;
+  description: string;
+  rawText: string;
+}
+
+// Look for the receipt total. Receipts usually print "Total", "Grand Total",
+// "Amount Due", "Amount Paid" etc. on a line with the final figure. If we can't
+// find a labeled total, fall back to the largest plausible amount on the receipt.
+function extractReceiptTotal(text: string): number | null {
+  const lines = text.split(/\r?\n/);
+  const totalLabels = /\b(grand\s*total|total\s*amount|amount\s*due|amount\s*paid|total\s*paid|total|balance\s*due|net\s*total|payable)\b/i;
+  const skipLabels = /\b(sub\s*total|subtotal|tax|gst|vat|tip|discount|change|cash|tendered)\b/i;
+
+  // Pass 1: find the labeled total. Prefer "grand total" when present.
+  let bestLabeled: { score: number; amount: number } | null = null;
+  for (const line of lines) {
+    if (skipLabels.test(line) && !/grand\s*total/i.test(line)) continue;
+    if (!totalLabels.test(line)) continue;
+    const amounts = [...line.matchAll(/([\d,]+\.\d{2})|(\d+)\s*$/g)]
+      .map((m) => parseFloat((m[1] || m[2] || "").replace(/,/g, "")))
+      .filter((n) => !isNaN(n) && n > 0 && n < 10000000);
+    if (amounts.length === 0) continue;
+    const amount = Math.max(...amounts);
+    const score = /grand\s*total|amount\s*due|amount\s*paid|balance\s*due/i.test(line) ? 2 : 1;
+    if (!bestLabeled || score > bestLabeled.score || (score === bestLabeled.score && amount > bestLabeled.amount)) {
+      bestLabeled = { score, amount };
+    }
+  }
+  if (bestLabeled) return bestLabeled.amount;
+
+  // Pass 2: largest currency-like amount in the body.
+  const allAmounts: number[] = [];
+  const re = /([\d,]+\.\d{2})/g;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(text)) !== null) {
+    const v = parseFloat(m[1].replace(/,/g, ""));
+    if (!isNaN(v) && v > 0 && v < 10000000) allAmounts.push(v);
+  }
+  if (allAmounts.length > 0) return Math.max(...allAmounts);
+
+  return extractAmount(text);
+}
+
+function extractReceiptDescription(text: string): string {
+  // First non-empty, non-numeric line is usually the merchant name.
+  const lines = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+  for (const line of lines.slice(0, 5)) {
+    const stripped = line.replace(/[^A-Za-z\s&'.-]/g, "").trim();
+    if (stripped.length >= 3 && /[A-Za-z]/.test(stripped) && !/receipt|invoice|bill|tax|gst|order|store/i.test(stripped)) {
+      // Title-case the merchant a bit
+      return stripped.replace(/\s+/g, " ").slice(0, 60);
+    }
+  }
+  return "Expense";
+}
+
+export function parseReceiptText(text: string): ParsedReceipt {
+  const cleaned = text.trim();
+  const amount = extractReceiptTotal(cleaned);
+  const date = extractDate(cleaned);
+  const description = extractReceiptDescription(cleaned);
+  const category = extractExplicitCategory(cleaned) || inferCategory(cleaned);
+  return { amount, category, date, description, rawText: cleaned };
+}
+
 // ============ MAIN PARSER ============
 
 export function parseMessage(text: string, ctx: FinancialContext): ParsedAction {

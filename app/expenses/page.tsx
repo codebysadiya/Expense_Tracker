@@ -2,12 +2,13 @@
 
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
-import { useEffect, useState, useCallback } from "react";
-import { getExpenses, addExpense, updateExpense, deleteExpense } from "@/lib/firestore";
+import { useEffect, useMemo, useState, useCallback } from "react";
+import { getExpenses, addExpense, updateExpense, deleteExpense, getAllBudgets } from "@/lib/firestore";
 import { useDataRefresh } from "@/lib/useDataRefresh";
-import { Expense, CATEGORIES } from "@/lib/types";
+import { Expense, Budget, CATEGORIES } from "@/lib/types";
 import ExpenseForm from "@/components/ExpenseForm";
 import ExportMenu from "@/components/ExportMenu";
+import AlertModal from "@/components/AlertModal";
 import { exportExpensesToExcel, exportExpensesToPDF } from "@/utils/export";
 import { format, subMonths, startOfMonth, endOfMonth } from "date-fns";
 
@@ -23,20 +24,28 @@ export default function ExpensesPage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
   const [allExpenses, setAllExpenses] = useState<Expense[]>([]);
+  const [budgets, setBudgets] = useState<Budget[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [showForm, setShowForm] = useState(false);
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
   const [filterCategory, setFilterCategory] = useState<string>("All");
   const [selectedMonth, setSelectedMonth] = useState("all");
+  const [overBudgetAlert, setOverBudgetAlert] = useState<{
+    monthLabel: string;
+    spent: number;
+    budget: number;
+    overBy: number;
+  } | null>(null);
 
   const months = generateMonthList(12);
 
-  const loadExpenses = useCallback(async () => {
+  const loadAll = useCallback(async () => {
     if (!user) return;
     try {
-      const exps = await getExpenses(user.uid);
+      const [exps, buds] = await Promise.all([getExpenses(user.uid), getAllBudgets(user.uid)]);
       setAllExpenses(exps);
+      setBudgets(buds);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load expenses");
     } finally {
@@ -51,13 +60,33 @@ export default function ExpensesPage() {
   useEffect(() => {
     if (!user) return;
     let cancelled = false;
-    getExpenses(user.uid)
-      .then((exps) => { if (!cancelled) { setAllExpenses(exps); setLoading(false); } })
+    Promise.all([getExpenses(user.uid), getAllBudgets(user.uid)])
+      .then(([exps, buds]) => { if (!cancelled) { setAllExpenses(exps); setBudgets(buds); setLoading(false); } })
       .catch((err) => { if (!cancelled) { setError(err instanceof Error ? err.message : "Failed to load expenses"); setLoading(false); } });
     return () => { cancelled = true; };
   }, [user]);
 
-  useDataRefresh(loadExpenses);
+  useDataRefresh(loadAll);
+
+  // Map month → { spent, budget } for indicators
+  const monthSummary = useMemo(() => {
+    const map: Record<string, { spent: number; budget: number | null }> = {};
+    for (const e of allExpenses) {
+      const m = e.date.slice(0, 7);
+      if (!map[m]) map[m] = { spent: 0, budget: null };
+      map[m].spent += e.amount;
+    }
+    for (const b of budgets) {
+      if (!map[b.month]) map[b.month] = { spent: 0, budget: b.amount };
+      else map[b.month].budget = b.amount;
+    }
+    return map;
+  }, [allExpenses, budgets]);
+
+  function isOverBudget(month: string): boolean {
+    const s = monthSummary[month];
+    return !!(s && s.budget != null && s.spent > s.budget);
+  }
 
   async function handleSubmit(data: { amount: number; category: string; date: string; description: string }) {
     if (!user) return;
@@ -68,14 +97,36 @@ export default function ExpensesPage() {
     }
     setShowForm(false);
     setEditingExpense(null);
-    await loadExpenses();
+
+    // Reload then check if the affected month is now over budget
+    const [exps, buds] = await Promise.all([getExpenses(user.uid), getAllBudgets(user.uid)]);
+    setAllExpenses(exps);
+    setBudgets(buds);
+
+    const expenseMonth = data.date.slice(0, 7);
+    const budget = buds.find((b) => b.month === expenseMonth);
+    if (budget) {
+      const start = startOfMonth(new Date(expenseMonth + "-01"));
+      const end = endOfMonth(new Date(expenseMonth + "-01"));
+      const monthSpent = exps
+        .filter((e) => { const d = new Date(e.date); return d >= start && d <= end; })
+        .reduce((s, e) => s + e.amount, 0);
+      if (monthSpent > budget.amount) {
+        setOverBudgetAlert({
+          monthLabel: format(start, "MMMM yyyy"),
+          spent: monthSpent,
+          budget: budget.amount,
+          overBy: monthSpent - budget.amount,
+        });
+      }
+    }
   }
 
   function handleCancel() { setShowForm(false); setEditingExpense(null); }
 
   async function handleDelete(id: string) {
     await deleteExpense(id);
-    await loadExpenses();
+    await loadAll();
   }
 
   if (authLoading || !user || loading) {
@@ -113,6 +164,21 @@ export default function ExpensesPage() {
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <AlertModal
+        open={!!overBudgetAlert}
+        variant="danger"
+        title="Over budget"
+        message={
+          overBudgetAlert
+            ? `${overBudgetAlert.monthLabel}: you've spent $${overBudgetAlert.spent.toFixed(2)} of your $${overBudgetAlert.budget.toFixed(2)} budget — that's $${overBudgetAlert.overBy.toFixed(2)} over.`
+            : ""
+        }
+        primaryLabel="Got it"
+        secondaryLabel="View budget"
+        onSecondary={() => router.push("/budget")}
+        onClose={() => setOverBudgetAlert(null)}
+      />
+
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Expenses</h1>
         <div className="flex items-center gap-2">
@@ -149,19 +215,30 @@ export default function ExpensesPage() {
               >
                 All Time
               </button>
-              {months.map((m) => (
-                <button
-                  key={m}
-                  onClick={() => setSelectedMonth(m)}
-                  className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${
-                    m === selectedMonth
-                      ? "bg-indigo-50 text-indigo-700 font-medium border-l-2 border-indigo-600"
-                      : "text-gray-600 hover:bg-gray-50"
-                  }`}
-                >
-                  {format(new Date(m + "-01"), "MMM yyyy")}
-                </button>
-              ))}
+              {months.map((m) => {
+                const over = isOverBudget(m);
+                const active = m === selectedMonth;
+                return (
+                  <button
+                    key={m}
+                    onClick={() => setSelectedMonth(m)}
+                    title={over ? "Over budget this month" : undefined}
+                    className={`w-full text-left px-4 py-2.5 text-sm transition-colors flex items-center justify-between gap-2 ${
+                      active
+                        ? "bg-indigo-50 text-indigo-700 font-medium border-l-2 border-indigo-600"
+                        : "text-gray-600 hover:bg-gray-50"
+                    }`}
+                  >
+                    <span>{format(new Date(m + "-01"), "MMM yyyy")}</span>
+                    {over && (
+                      <span className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wide text-red-600 bg-red-50 border border-red-200 px-1.5 py-0.5 rounded">
+                        <span className="h-1.5 w-1.5 rounded-full bg-red-500" />
+                        Over
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
             </div>
           </div>
         </div>

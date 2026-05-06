@@ -2,10 +2,10 @@
 
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
-import { useEffect, useState, useCallback } from "react";
-import { getBudget, setBudget, getExpenses } from "@/lib/firestore";
+import { useEffect, useMemo, useState, useCallback } from "react";
+import { getBudget, setBudget, getExpenses, getAllBudgets } from "@/lib/firestore";
 import { useDataRefresh } from "@/lib/useDataRefresh";
-import { Expense } from "@/lib/types";
+import { Expense, Budget } from "@/lib/types";
 import { getTotalExpenses, getExpensesByCategory } from "@/utils/analysis";
 import BudgetProgress from "@/components/BudgetProgress";
 import { format, subMonths, startOfMonth, endOfMonth } from "date-fns";
@@ -34,6 +34,7 @@ export default function BudgetPage() {
   const [budgetAmount, setBudgetAmount] = useState<number | null>(null);
   const [inputAmount, setInputAmount] = useState("");
   const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [allBudgets, setAllBudgets] = useState<Budget[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
@@ -48,19 +49,34 @@ export default function BudgetPage() {
   const loadData = useCallback(async () => {
     if (!user) return;
     try {
-      const [bud, exps] = await Promise.all([
+      const [bud, exps, buds] = await Promise.all([
         getBudget(user.uid, selectedMonth),
         getExpenses(user.uid),
+        getAllBudgets(user.uid),
       ]);
       setBudgetAmount(bud?.amount ?? null);
       setInputAmount(bud?.amount?.toString() ?? "");
       setExpenses(exps);
+      setAllBudgets(buds);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load budget data");
     } finally {
       setLoading(false);
     }
   }, [user, selectedMonth]);
+
+  const monthOverBudget = useMemo(() => {
+    const spent: Record<string, number> = {};
+    for (const e of expenses) {
+      const m = e.date.slice(0, 7);
+      spent[m] = (spent[m] || 0) + e.amount;
+    }
+    const map: Record<string, boolean> = {};
+    for (const b of allBudgets) {
+      map[b.month] = (spent[b.month] || 0) > b.amount;
+    }
+    return map;
+  }, [expenses, allBudgets]);
 
   useEffect(() => { setLoading(true); loadData(); }, [loadData]);
 
@@ -119,19 +135,29 @@ export default function BudgetPage() {
               <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Months</p>
             </div>
             <div className="max-h-96 overflow-y-auto">
-              {months.map((m) => (
-                <button
-                  key={m}
-                  onClick={() => setSelectedMonth(m)}
-                  className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${
-                    m === selectedMonth
-                      ? "bg-indigo-50 text-indigo-700 font-medium border-l-2 border-indigo-600"
-                      : "text-gray-600 hover:bg-gray-50"
-                  }`}
-                >
-                  {format(new Date(m + "-01"), "MMM yyyy")}
-                </button>
-              ))}
+              {months.map((m) => {
+                const over = monthOverBudget[m];
+                return (
+                  <button
+                    key={m}
+                    onClick={() => setSelectedMonth(m)}
+                    title={over ? "Over budget this month" : undefined}
+                    className={`w-full text-left px-4 py-2.5 text-sm transition-colors flex items-center justify-between gap-2 ${
+                      m === selectedMonth
+                        ? "bg-indigo-50 text-indigo-700 font-medium border-l-2 border-indigo-600"
+                        : "text-gray-600 hover:bg-gray-50"
+                    }`}
+                  >
+                    <span>{format(new Date(m + "-01"), "MMM yyyy")}</span>
+                    {over && (
+                      <span className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wide text-red-600 bg-red-50 border border-red-200 px-1.5 py-0.5 rounded">
+                        <span className="h-1.5 w-1.5 rounded-full bg-red-500" />
+                        Over
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
             </div>
           </div>
         </div>

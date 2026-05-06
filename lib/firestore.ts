@@ -54,6 +54,12 @@ export async function setBudget(userId: string, month: string, amount: number): 
   await setDoc(docRef, { userId, month, amount });
 }
 
+export async function getAllBudgets(userId: string): Promise<Budget[]> {
+  const q = query(collection(db, "budgets"), where("userId", "==", userId));
+  const snapshot = await getDocs(q);
+  return snapshot.docs.map((d) => ({ id: d.id, ...d.data() } as Budget));
+}
+
 // --- Savings Goals ---
 
 export async function getSavingsGoals(userId: string): Promise<SavingsGoal[]> {
