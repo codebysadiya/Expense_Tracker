@@ -66,8 +66,7 @@ export default function ExpenseForm({ expense, onSubmit, onCancel }: ExpenseForm
     setParseStatus(null);
     setOcrProgress(0);
     try {
-      // tesseract.js is an optional runtime dependency — install with `npm install tesseract.js`
-      // @ts-expect-error optional dep, no types until installed
+
       const tesseract = await import("tesseract.js").catch(() => null);
       if (!tesseract) {
         setParseStatus({
@@ -107,143 +106,182 @@ export default function ExpenseForm({ expense, onSubmit, onCancel }: ExpenseForm
     setSubmitting(false);
   }
 
-  return (
-    <form onSubmit={handleSubmit} className="bg-white rounded-lg border border-gray-200 shadow-sm p-5 mb-6 space-y-4">
-      <h2 className="text-lg font-semibold text-gray-900">
-        {expense ? "Edit Expense" : "New Expense"}
-      </h2>
+ return (
+  <form
+    onSubmit={handleSubmit}
+    className="relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-xl p-6 mb-6 space-y-5"
+  >
+    {/* GLOW BACKGROUND ELEMENTS */}
+    <div className="absolute -top-10 -left-10 w-40 h-40 bg-emerald-500/20 blur-3xl rounded-full" />
+    <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-purple-500/20 blur-3xl rounded-full" />
 
-      {!expense && (
-        <div className="rounded-lg border border-indigo-100 bg-indigo-50/40 p-4 space-y-3">
-          <div className="flex items-center justify-between gap-3">
-            <p className="text-xs font-semibold text-indigo-700 uppercase tracking-wide">Auto-fill</p>
-            <div className="inline-flex rounded-md border border-indigo-200 overflow-hidden text-xs">
-              <button
-                type="button"
-                onClick={() => setFillMode("image")}
-                className={`px-3 py-1.5 ${fillMode === "image" ? "bg-indigo-600 text-white" : "bg-white text-indigo-700 hover:bg-indigo-50"}`}
-              >
-                Receipt / bill
-              </button>
-              <button
-                type="button"
-                onClick={() => setFillMode("text")}
-                className={`px-3 py-1.5 ${fillMode === "text" ? "bg-indigo-600 text-white" : "bg-white text-indigo-700 hover:bg-indigo-50"}`}
-              >
-                Paste text
-              </button>
-            </div>
+    {/* TITLE */}
+    <h2 className="text-lg font-semibold bg-gradient-to-r from-emerald-300 to-purple-400 text-transparent bg-clip-text">
+      {expense ? "Edit Expense" : "New Expense"}
+    </h2>
+
+    {/* AUTO FILL SECTION */}
+    {!expense && (
+      <div className="relative rounded-xl border border-white/10 bg-white/5 p-4 space-y-3">
+        <div className="flex items-center justify-between gap-3">
+          <p className="text-xs font-semibold text-emerald-300 uppercase tracking-wide">
+            Auto-fill
+          </p>
+
+          <div className="inline-flex rounded-lg border border-white/10 overflow-hidden text-xs backdrop-blur-md">
+            <button
+              type="button"
+              onClick={() => setFillMode("image")}
+              className={`px-3 py-1.5 transition ${
+                fillMode === "image"
+                  ? "bg-emerald-500 text-black font-semibold"
+                  : "bg-white/5 text-gray-300 hover:bg-white/10"
+              }`}
+            >
+              Receipt
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setFillMode("text")}
+              className={`px-3 py-1.5 transition ${
+                fillMode === "text"
+                  ? "bg-purple-500 text-black font-semibold"
+                  : "bg-white/5 text-gray-300 hover:bg-white/10"
+              }`}
+            >
+              Paste text
+            </button>
           </div>
-
-          {fillMode === "image" ? (
-            <div>
-              <label className="block">
-                <span className="sr-only">Upload receipt</span>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageUpload}
-                  disabled={parsing}
-                  className="block w-full text-sm text-gray-600 file:mr-3 file:py-2 file:px-3 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-indigo-600 file:text-white hover:file:bg-indigo-700 file:cursor-pointer disabled:opacity-50"
-                />
-              </label>
-              <p className="text-xs text-gray-500 mt-1">Upload a photo of a receipt or bill — we&apos;ll read it.</p>
-            </div>
-          ) : (
-            <div className="space-y-2">
-              <textarea
-                rows={3}
-                value={pasteText}
-                onChange={(e) => setPasteText(e.target.value)}
-                placeholder="Paste an SMS, email, or receipt text here…"
-                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
-              />
-              <button
-                type="button"
-                onClick={handleParseText}
-                disabled={parsing || !pasteText.trim()}
-                className="bg-indigo-600 text-white px-3 py-1.5 rounded-md text-xs font-medium hover:bg-indigo-700 disabled:opacity-50"
-              >
-                {parsing ? "Parsing…" : "Auto-fill from text"}
-              </button>
-            </div>
-          )}
-
-          {parsing && fillMode === "image" && ocrProgress > 0 && (
-            <div className="text-xs text-indigo-700">Reading receipt… {ocrProgress}%</div>
-          )}
-          {parseStatus && (
-            <div className={`text-xs rounded-md px-3 py-2 ${parseStatus.kind === "ok" ? "bg-green-50 text-green-700 border border-green-200" : "bg-red-50 text-red-700 border border-red-200"}`}>
-              {parseStatus.text}
-            </div>
-          )}
         </div>
-      )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Amount</label>
-          <input
-            type="number"
-            step="0.01"
-            min="0.01"
-            required
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            placeholder="0.00"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
-          <select
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        {fillMode === "image" ? (
+          <div>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleImageUpload}
+              disabled={parsing}
+              className="block w-full text-sm text-gray-300 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:bg-emerald-500 file:text-black file:font-semibold hover:file:bg-emerald-400 file:cursor-pointer disabled:opacity-50"
+            />
+            <p className="text-xs text-gray-400 mt-1">
+              Upload receipt — AI will extract details automatically
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            <textarea
+              rows={3}
+              value={pasteText}
+              onChange={(e) => setPasteText(e.target.value)}
+              placeholder="Paste SMS, email or bill text..."
+              className="w-full rounded-lg bg-white/5 border border-white/10 px-3 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-400"
+            />
+
+            <button
+              type="button"
+              onClick={handleParseText}
+              disabled={parsing || !pasteText.trim()}
+              className="bg-emerald-500 hover:bg-emerald-400 text-black px-3 py-1.5 rounded-lg text-xs font-semibold transition disabled:opacity-50"
+            >
+              {parsing ? "Parsing..." : "Auto-fill"}
+            </button>
+          </div>
+        )}
+
+        {parsing && fillMode === "image" && ocrProgress > 0 && (
+          <div className="text-xs text-emerald-300">
+            Reading receipt... {ocrProgress}%
+          </div>
+        )}
+
+        {parseStatus && (
+          <div
+            className={`text-xs rounded-lg px-3 py-2 border ${
+              parseStatus.kind === "ok"
+                ? "bg-emerald-500/10 text-emerald-300 border-emerald-500/20"
+                : "bg-red-500/10 text-red-300 border-red-500/20"
+            }`}
           >
-            {CATEGORIES.map((c) => (
-              <option key={c} value={c}>{c}</option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
-          <input
-            type="date"
-            required
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-          <input
-            type="text"
-            required
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            placeholder="What was this for?"
-          />
-        </div>
+            {parseStatus.text}
+          </div>
+        )}
       </div>
-      <div className="flex gap-3">
-        <button
-          type="submit"
-          disabled={submitting}
-          className="bg-indigo-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-700 disabled:opacity-50 transition-colors"
-        >
-          {submitting ? "Saving..." : expense ? "Update" : "Add Expense"}
-        </button>
-        <button
-          type="button"
-          onClick={onCancel}
-          className="border border-gray-300 text-gray-700 px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-50 transition-colors"
-        >
-          Cancel
-        </button>
+    )}
+
+    {/* INPUT GRID */}
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div>
+        <label className="block text-sm text-gray-300 mb-1">Amount</label>
+        <input
+          type="number"
+          step="0.01"
+          min="0.01"
+          required
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
+          className="w-full rounded-lg bg-white/5 border border-white/10 px-3 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-400"
+          placeholder="0.00"
+        />
       </div>
-    </form>
-  );
+
+      <div>
+        <label className="block text-sm text-gray-300 mb-1">Category</label>
+        <select
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
+          className="w-full rounded-lg bg-white/5 border border-white/10 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-emerald-400"
+        >
+          {CATEGORIES.map((c) => (
+            <option key={c} value={c}>
+              {c}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div>
+        <label className="block text-sm text-gray-300 mb-1">Date</label>
+        <input
+          type="date"
+          required
+          value={date}
+          onChange={(e) => setDate(e.target.value)}
+          className="w-full rounded-lg bg-white/5 border border-white/10 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-emerald-400"
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm text-gray-300 mb-1">Description</label>
+        <input
+          type="text"
+          required
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          placeholder="What was this for?"
+          className="w-full rounded-lg bg-white/5 border border-white/10 px-3 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-400"
+        />
+      </div>
+    </div>
+
+    {/* BUTTONS */}
+    <div className="flex gap-3 pt-2">
+      <button
+        type="submit"
+        disabled={submitting}
+        className="bg-gradient-to-r from-emerald-400 to-purple-500 text-black px-4 py-2 rounded-lg text-sm font-semibold hover:scale-[1.02] transition disabled:opacity-50"
+      >
+        {submitting ? "Saving..." : expense ? "Update" : "Add Expense"}
+      </button>
+
+      <button
+        type="button"
+        onClick={onCancel}
+        className="border border-white/10 text-gray-300 px-4 py-2 rounded-lg text-sm hover:bg-white/5 transition"
+      >
+        Cancel
+      </button>
+    </div>
+  </form>
+);
 }

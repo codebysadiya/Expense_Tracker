@@ -2,20 +2,27 @@
 
 import { useState, useRef, useEffect } from "react";
 
-interface ExportMenuProps {
+type Props = {
   onExportExcel: () => void;
   onExportPDF: () => void;
-  onExportFullExcel?: () => void;
-  onExportFullPDF?: () => void;
-}
+  onExportFullExcel: () => void;
+  onExportFullPDF: () => void;
+};
 
-export default function ExportMenu({ onExportExcel, onExportPDF, onExportFullExcel, onExportFullPDF }: ExportMenuProps) {
+export default function ExportMenu({
+  onExportExcel,
+  onExportPDF,
+  onExportFullExcel,
+  onExportFullPDF,
+}: Props) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
     }
     document.addEventListener("mousedown", handleClick);
     return () => document.removeEventListener("mousedown", handleClick);
@@ -23,42 +30,60 @@ export default function ExportMenu({ onExportExcel, onExportPDF, onExportFullExc
 
   return (
     <div className="relative" ref={ref}>
+
+      {/* BUTTON */}
       <button
         onClick={() => setOpen(!open)}
-        className="flex items-center gap-1.5 border border-gray-300 text-gray-700 px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-50 transition-colors"
+        className="px-4 py-2 rounded-lg bg-white/5 border border-white/10 backdrop-blur-md text-sm text-gray-200 hover:bg-white/10 transition shadow-md hover:shadow-emerald-500/10"
       >
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-          <polyline points="7 10 12 15 17 10" />
-          <line x1="12" y1="15" x2="12" y2="3" />
-        </svg>
         Export
       </button>
+
+      {/* DROPDOWN */}
       {open && (
-        <div className="absolute right-0 top-full mt-1 w-52 bg-white rounded-lg border border-gray-200 shadow-lg py-1 z-50">
-          <button onClick={() => { onExportExcel(); setOpen(false); }}
-            className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2">
-            <span className="text-green-600 font-mono text-xs font-bold">.xlsx</span> Expenses (Excel)
+        <div className="absolute right-0 mt-3 w-56 bg-black/80 backdrop-blur-xl border border-white/10 rounded-xl shadow-lg overflow-hidden z-50">
+
+          {/* Section */}
+          <div className="px-4 py-2 text-xs text-gray-400 border-b border-white/10">
+            Quick Export
+          </div>
+
+          <button
+            onClick={() => { setOpen(false); onExportExcel(); }}
+            className="w-full text-left px-4 py-2.5 text-sm text-gray-200 hover:bg-white/10 transition"
+          >
+            Export Expenses (Excel)
           </button>
-          <button onClick={() => { onExportPDF(); setOpen(false); }}
-            className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2">
-            <span className="text-red-600 font-mono text-xs font-bold">.pdf</span> Expenses (PDF)
+
+          <button
+            onClick={() => { setOpen(false); onExportPDF(); }}
+            className="w-full text-left px-4 py-2.5 text-sm text-gray-200 hover:bg-white/10 transition"
+          >
+            Export Expenses (PDF)
           </button>
-          {onExportFullExcel && (
-            <>
-              <div className="border-t border-gray-100 my-1" />
-              <button onClick={() => { onExportFullExcel(); setOpen(false); }}
-                className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2">
-                <span className="text-green-600 font-mono text-xs font-bold">.xlsx</span> Full Report (Excel)
-              </button>
-            </>
-          )}
-          {onExportFullPDF && (
-            <button onClick={() => { onExportFullPDF(); setOpen(false); }}
-              className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2">
-              <span className="text-red-600 font-mono text-xs font-bold">.pdf</span> Full Report (PDF)
-            </button>
-          )}
+
+          {/* Divider */}
+          <div className="border-t border-white/10 my-1"></div>
+
+          {/* Full Report */}
+          <div className="px-4 py-2 text-xs text-gray-400">
+            Full Report
+          </div>
+
+          <button
+            onClick={() => { setOpen(false); onExportFullExcel(); }}
+            className="w-full text-left px-4 py-2.5 text-sm text-emerald-300 hover:bg-emerald-500/10 transition"
+          >
+            Full Report (Excel)
+          </button>
+
+          <button
+            onClick={() => { setOpen(false); onExportFullPDF(); }}
+            className="w-full text-left px-4 py-2.5 text-sm text-emerald-300 hover:bg-emerald-500/10 transition"
+          >
+            Full Report (PDF)
+          </button>
+
         </div>
       )}
     </div>

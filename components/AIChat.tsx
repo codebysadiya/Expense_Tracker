@@ -135,97 +135,205 @@ export default function AIChat() {
   if (!user) return null;
 
   return (
-    <>
-      {/* Toggle button */}
-      <button
-        onClick={() => setOpen(!open)}
-        className="fixed bottom-6 left-6 z-[60] h-12 w-12 rounded-full bg-indigo-600 text-white shadow-lg hover:bg-indigo-700 transition-all flex items-center justify-center"
-        aria-label="AI Assistant"
-      >
+  <>
+    {/* FLOATING BUTTON */}
+    <button
+      onClick={() => setOpen(!open)}
+      className="fixed bottom-6 left-6 z-[60] group"
+      aria-label="AI Assistant"
+    >
+      <div className="absolute inset-0 rounded-full bg-emerald-400/20 blur-xl group-hover:bg-emerald-400/30 transition-all"></div>
+
+      <div className="relative h-14 w-14 rounded-2xl border border-white/10 bg-white/10 backdrop-blur-xl shadow-2xl flex items-center justify-center text-white hover:scale-105 transition-all duration-300">
         {open ? (
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
-        ) : (
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+          <svg
+            width="22"
+            height="22"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
           </svg>
+        ) : (
+
+          <span className="text-xl">🤖</span>
+
         )}
-      </button>
+      </div>
+    </button>
 
-      {/* Chat panel */}
-      {open && (
-        <div className="fixed bottom-20 left-6 z-[60] w-[380px] max-h-[520px] bg-white rounded-2xl shadow-2xl border border-gray-200 flex flex-col overflow-hidden">
-          {/* Header */}
-          <div className="px-4 py-3 bg-indigo-600 text-white flex items-center gap-3">
-            <div className="h-8 w-8 rounded-full bg-white/20 flex items-center justify-center text-sm font-bold">AI</div>
+    {/* CHAT PANEL */}
+    {open && (
+      <div className="fixed bottom-24 left-6 z-[60] w-[390px] max-h-[600px] overflow-hidden rounded-3xl border border-white/10 bg-[#0b0f19]/95 backdrop-blur-2xl shadow-[0_20px_60px_rgba(0,0,0,0.45)] flex flex-col">
+
+        {/* TOP GLOW */}
+        <div className="absolute top-0 left-0 w-full h-32 bg-linear-to-r from-emerald-400/10 via-purple-500/10 to-cyan-400/10 blur-3xl pointer-events-none"></div>
+
+        {/* HEADER */}
+        <div className="relative px-5 py-4 border-b border-white/10 flex items-center justify-between">
+
+          <div className="flex items-center gap-3">
+
+            <div className="relative">
+              <div className="absolute inset-0 bg-emerald-400/20 blur-md rounded-full"></div>
+
+              <div className="relative h-11 w-11 rounded-2xl bg-linear-to-br from-emerald-400 to-purple-500 flex items-center justify-center text-sm font-bold text-black shadow-lg">
+                AI
+              </div>
+            </div>
+
             <div>
-              <p className="text-sm font-semibold">ExpenseAI Assistant</p>
-              <p className="text-xs text-indigo-200">Ask anything or give commands</p>
+              <p className="text-sm font-semibold text-white">
+                ExpenseAI Assistant
+              </p>
+
+              <div className="flex items-center gap-2 mt-0.5">
+                <div className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></div>
+
+                <p className="text-xs text-gray-400">
+                  Online • Smart finance assistant
+                </p>
+              </div>
             </div>
           </div>
 
-          {/* Messages */}
-          <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3 min-h-[200px] max-h-[360px]">
-            {messages.length === 0 && (
-              <div className="text-center text-gray-400 text-xs py-8 space-y-2">
-                <p className="font-medium text-gray-500">Try saying:</p>
-                <p>&quot;Add $50 expense for groceries&quot;</p>
-                <p>&quot;Set my budget to $2000 this month&quot;</p>
-                <p>&quot;John owes me $30 for lunch&quot;</p>
-                <p>&quot;What did I spend most on this month?&quot;</p>
-                <p>&quot;What is my expense to budget ratio?&quot;</p>
-              </div>
-            )}
-            {messages.map((msg, i) => (
-              <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
-                <div className={`max-w-[85%] px-3 py-2 rounded-xl text-sm whitespace-pre-wrap ${
-                  msg.role === "user"
-                    ? "bg-indigo-600 text-white rounded-br-sm"
-                    : "bg-gray-100 text-gray-800 rounded-bl-sm"
-                }`}>
-                  {msg.text}
-                </div>
-              </div>
-            ))}
-            {loading && (
-              <div className="flex justify-start">
-                <div className="bg-gray-100 px-4 py-2 rounded-xl rounded-bl-sm">
-                  <div className="flex gap-1">
-                    <div className="h-2 w-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
-                    <div className="h-2 w-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
-                    <div className="h-2 w-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
-                  </div>
-                </div>
-              </div>
-            )}
-            <div ref={messagesEndRef} />
-          </div>
-
-          {/* Input */}
-          <div className="px-3 py-3 border-t border-gray-100 bg-gray-50">
-            <div className="flex gap-2">
-              <input
-                ref={inputRef}
-                type="text"
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
-                placeholder="Type a message..."
-                className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
-                disabled={loading}
-              />
-              <button
-                onClick={handleSend}
-                disabled={loading || !input.trim()}
-                className="bg-indigo-600 text-white px-3 py-2 rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-colors"
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" />
-                </svg>
-              </button>
-            </div>
+          <div className="h-9 w-9 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-gray-400">
+            ✨
           </div>
         </div>
-      )}
-    </>
-  );
+
+        {/* MESSAGES */}
+        <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4 min-h-[240px] max-h-[420px] scrollbar-thin scrollbar-thumb-white/10">
+
+          {messages.length === 0 && (
+            <div className="py-8 px-4">
+
+              <div className="rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur-xl">
+
+                <p className="text-white font-medium mb-4">
+                  Try asking:
+                </p>
+
+                <div className="space-y-3 text-sm">
+
+                  {[
+                    "Add $50 expense for groceries",
+                    "Set my budget to $2000 this month",
+                    "John owes me $30 for lunch",
+                    "What did I spend most on?",
+                    "Show my expense ratio",
+                  ].map((example, i) => (
+                    <div
+                      key={i}
+                      className="bg-white/5 border border-white/5 rounded-xl px-3 py-2 text-gray-300 hover:bg-white/10 transition"
+                    >
+                      “{example}”
+                    </div>
+                  ))}
+
+                </div>
+              </div>
+            </div>
+          )}
+
+          {messages.map((msg, i) => (
+            <div
+              key={i}
+              className={`flex ${
+                msg.role === "user"
+                  ? "justify-end"
+                  : "justify-start"
+              }`}
+            >
+
+              <div
+                className={`relative max-w-[85%] px-4 py-3 rounded-2xl text-sm whitespace-pre-wrap shadow-lg ${
+                  msg.role === "user"
+                    ? "bg-linear-to-r from-emerald-400 to-purple-500 text-black rounded-br-md"
+                    : "bg-white/5 border border-white/10 text-gray-200 rounded-bl-md backdrop-blur-xl"
+                }`}
+              >
+                {msg.text}
+              </div>
+            </div>
+          ))}
+
+          {/* TYPING */}
+          {loading && (
+            <div className="flex justify-start">
+
+              <div className="bg-white/5 border border-white/10 px-4 py-3 rounded-2xl rounded-bl-md backdrop-blur-xl">
+
+                <div className="flex gap-1.5">
+                  <div
+                    className="h-2 w-2 rounded-full bg-emerald-400 animate-bounce"
+                    style={{ animationDelay: "0ms" }}
+                  />
+                  <div
+                    className="h-2 w-2 rounded-full bg-purple-400 animate-bounce"
+                    style={{ animationDelay: "150ms" }}
+                  />
+                  <div
+                    className="h-2 w-2 rounded-full bg-cyan-400 animate-bounce"
+                    style={{ animationDelay: "300ms" }}
+                  />
+                </div>
+
+              </div>
+            </div>
+          )}
+
+          <div ref={messagesEndRef} />
+        </div>
+
+        {/* INPUT AREA */}
+        <div className="border-t border-white/10 bg-black/20 backdrop-blur-xl p-4">
+
+          <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-3 py-2 focus-within:border-emerald-400/40 transition-all">
+
+            <input
+              ref={inputRef}
+              type="text"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSend();
+                }
+              }}
+              placeholder="Ask ExpenseAI anything..."
+              className="flex-1 bg-transparent text-sm text-white placeholder:text-gray-500 focus:outline-none"
+              disabled={loading}
+            />
+
+            <button
+              onClick={handleSend}
+              disabled={loading || !input.trim()}
+              className="h-11 w-11 rounded-xl bg-linear-to-r from-emerald-400 to-purple-500 text-black flex items-center justify-center hover:scale-105 disabled:opacity-50 transition-all shadow-lg"
+            >
+              <svg
+                width="17"
+                height="17"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <line x1="22" y1="2" x2="11" y2="13" />
+                <polygon points="22 2 15 22 11 13 2 9 22 2" />
+              </svg>
+            </button>
+
+          </div>
+        </div>
+      </div>
+    )}
+  </>
+);
 }
