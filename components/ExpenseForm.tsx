@@ -6,37 +6,57 @@ import { format } from "date-fns";
 
 interface ExpenseFormProps {
   expense?: Expense | null;
-  onSubmit: (data: { amount: number; category: string; date: string; description: string }) => Promise<void>;
+  onSubmit: (data: {
+    amount: number;
+    category: string;
+    date: string;
+    description: string;
+  }) => Promise<void>;
   onCancel: () => void;
 }
 
-export default function ExpenseForm({ expense, onSubmit, onCancel }: ExpenseFormProps) {
-  const [amount, setAmount] = useState(expense ? expense.amount.toString() : "");
-  const [category, setCategory] = useState<string>(expense?.category ?? CATEGORIES[0]);
-  const [date, setDate] = useState(expense ? expense.date.split("T")[0] : format(new Date(), "yyyy-MM-dd"));
-  const [description, setDescription] = useState(expense?.description ?? "");
+export default function ExpenseForm({
+  expense,
+  onSubmit,
+  onCancel,
+}: ExpenseFormProps) {
+  const [amount, setAmount] = useState(
+    expense ? expense.amount.toString() : ""
+  );
+  const [category, setCategory] = useState(
+    expense?.category ?? CATEGORIES[0]
+  );
+  const [date, setDate] = useState(
+    expense ? expense.date.split("T")[0] : format(new Date(), "yyyy-MM-dd")
+  );
+  const [description, setDescription] = useState(
+    expense?.description ?? ""
+  );
   const [submitting, setSubmitting] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setSubmitting(true);
+
     await onSubmit({
       amount: parseFloat(amount),
       category,
       date: new Date(date).toISOString(),
       description,
     });
+
     setSubmitting(false);
   }
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white rounded-lg border border-gray-200 shadow-sm p-5 mb-6 space-y-4">
-      <h2 className="text-lg font-semibold text-gray-900">
-        {expense ? "Edit Expense" : "New Expense"}
-      </h2>
+    <form onSubmit={handleSubmit} className="space-y-5 text-white">
+
+      {/* GRID */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+        {/* AMOUNT */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Amount</label>
+          <label className="text-xs text-gray-300">Amount</label>
           <input
             type="number"
             step="0.01"
@@ -44,59 +64,112 @@ export default function ExpenseForm({ expense, onSubmit, onCancel }: ExpenseForm
             required
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
-            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
             placeholder="0.00"
+            className="
+              w-full mt-1 rounded-xl px-3 py-2 text-sm
+              bg-white/5 backdrop-blur-md
+              border border-white/10 text-white
+              placeholder:text-gray-400
+              shadow-inner shadow-black/30
+              focus:ring-2 focus:ring-emerald-400/60
+              focus:border-emerald-400/40
+              outline-none transition
+            "
           />
         </div>
+
+        {/* CATEGORY */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+          <label className="text-xs text-gray-300">Category</label>
           <select
             value={category}
             onChange={(e) => setCategory(e.target.value)}
-            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="
+              w-full mt-1 rounded-xl px-3 py-2 text-sm
+              bg-white/5 backdrop-blur-md
+              border border-white/10 text-white
+              focus:ring-2 focus:ring-emerald-400/60
+              outline-none transition
+            "
           >
             {CATEGORIES.map((c) => (
-              <option key={c} value={c}>{c}</option>
+              <option key={c} value={c} className="bg-[#0b0f14]">
+                {c}
+              </option>
             ))}
           </select>
         </div>
+
+        {/* DATE */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
+          <label className="text-xs text-gray-300">Date</label>
           <input
             type="date"
             required
             value={date}
             onChange={(e) => setDate(e.target.value)}
-            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="
+              w-full mt-1 rounded-xl px-3 py-2 text-sm
+              bg-white/5 backdrop-blur-md
+              border border-white/10 text-white
+              focus:ring-2 focus:ring-emerald-400/60
+              outline-none transition
+            "
           />
         </div>
+
+        {/* DESCRIPTION */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+          <label className="text-xs text-gray-300">Description</label>
           <input
             type="text"
             required
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
             placeholder="What was this for?"
+            className="
+              w-full mt-1 rounded-xl px-3 py-2 text-sm
+              bg-white/5 backdrop-blur-md
+              border border-white/10 text-white
+              placeholder:text-gray-400
+              shadow-inner shadow-black/30
+              focus:ring-2 focus:ring-emerald-400/60
+              outline-none transition
+            "
           />
         </div>
       </div>
-      <div className="flex gap-3">
+
+      {/* BUTTONS */}
+      <div className="flex gap-3 pt-2">
+
         <button
           type="submit"
           disabled={submitting}
-          className="bg-indigo-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-700 disabled:opacity-50 transition-colors"
+          className="
+            px-4 py-2 rounded-xl text-sm font-semibold text-black
+            bg-gradient-to-r from-emerald-400 via-cyan-400 to-purple-500
+            shadow-[0_0_25px_rgba(34,211,238,0.25)]
+            hover:scale-[1.03] active:scale-[0.98]
+            transition disabled:opacity-50
+          "
         >
           {submitting ? "Saving..." : expense ? "Update" : "Add Expense"}
         </button>
+
         <button
           type="button"
           onClick={onCancel}
-          className="border border-gray-300 text-gray-700 px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-50 transition-colors"
+          className="
+            px-4 py-2 rounded-xl text-sm font-medium
+            bg-white/5 border border-white/10 text-gray-300
+            hover:bg-white/10 hover:text-white
+            transition
+          "
         >
           Cancel
         </button>
+
       </div>
     </form>
   );

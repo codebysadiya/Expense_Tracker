@@ -14,7 +14,6 @@ import {
   getMonthlyExpenses,
 } from "@/utils/analysis";
 import { predictEndOfMonthSpending } from "@/utils/predictions";
-import StatCard from "@/components/StatCard";
 import BudgetProgress from "@/components/BudgetProgress";
 import ExportMenu from "@/components/ExportMenu";
 import { exportExpensesToExcel, exportExpensesToPDF, exportFullReportExcel, exportFullReportPDF } from "@/utils/export";
@@ -24,12 +23,11 @@ import {
   Cell,
   BarChart,
   Bar,
-  LineChart,
-  Line,
   XAxis,
   YAxis,
   Tooltip,
   ResponsiveContainer,
+  Legend,
 } from "recharts";
 import { format } from "date-fns";
 
@@ -132,152 +130,200 @@ export default function DashboardPage() {
   const isNewUser = expenses.length === 0;
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-        <ExportMenu
-          onExportExcel={() => exportExpensesToExcel(expenses)}
-          onExportPDF={() => exportExpensesToPDF(expenses)}
-          onExportFullExcel={() => exportFullReportExcel(expenses, budgetObj, savingsGoals, debts)}
-          onExportFullPDF={() => exportFullReportPDF(expenses, budgetObj, savingsGoals, debts)}
-        />
+  <div className="relative min-h-screen bg-black text-white overflow-hidden px-4 sm:px-6 lg:px-8 py-8">
+
+    {/* MULTI-LAYER GLOW */}
+    <div className="absolute w-[700px] h-[700px] bg-purple-500/20 blur-[140px] rounded-full -top-40 -left-40 animate-pulse"></div>
+    <div className="absolute w-[600px] h-[600px] bg-emerald-400/20 blur-[140px] rounded-full bottom-0 right-0 animate-pulse"></div>
+    <div className="absolute w-[500px] h-[500px] bg-pink-500/10 blur-[120px] rounded-full top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"></div>
+
+    {/* FLOATING GRID LINES (pro effect) */}
+    <div className="absolute inset-0 opacity-[0.04] bg-[linear-gradient(to_right,#fff_1px,transparent_1px),linear-gradient(to_bottom,#fff_1px,transparent_1px)] bg-[size:60px_60px]"></div>
+
+    <div className="relative z-10 max-w-7xl mx-auto">
+
+      {/* HEADER */}
+      <div className="flex items-center justify-between mb-10">
+        <h1 className="text-4xl font-extrabold bg-gradient-to-r from-emerald-400 via-teal-300 to-purple-400 bg-clip-text text-transparent animate-gradient-x">
+          Financial Dashboard
+        </h1>
+
+        <div className="flex items-center gap-3">
+          <div className="px-4 py-2 rounded-xl bg-white/5 border border-white/10 backdrop-blur-md text-sm text-gray-300">
+            {new Date().toDateString()}
+          </div>
+          <ExportMenu
+            onExportExcel={() => exportExpensesToExcel(expenses)}
+            onExportPDF={() => exportExpensesToPDF(expenses)}
+            onExportFullExcel={() => exportFullReportExcel(expenses, budgetObj, savingsGoals, debts)}
+            onExportFullPDF={() => exportFullReportPDF(expenses, budgetObj, savingsGoals, debts)}
+          />
+        </div>
       </div>
 
-      {isNewUser && (
-        <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-5 mb-6">
-          <h2 className="text-lg font-semibold text-indigo-900 mb-1">Welcome to ExpenseAI!</h2>
-          <p className="text-sm text-indigo-700">
-            Get started by adding your first expense on the{" "}
-            <a href="/expenses" className="font-medium underline">Expenses</a> page,
-            then set a monthly budget on the{" "}
-            <a href="/budget" className="font-medium underline">Budget</a> page.
-          </p>
-        </div>
-      )}
+      {/* STATS */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
 
-      {budget && !isNewUser && (
-        <div className="mb-6">
-          <BudgetProgress spent={currentTotal} budget={budget} showAlert />
-        </div>
-      )}
+        {[ 
+          {
+            label: "This Month",
+            value: `$${currentTotal.toFixed(2)}`,
+            sub: changeText
+          },
+          {
+            label: "Last Month",
+            value: hasLastMonth ? `$${lastTotal.toFixed(2)}` : "—",
+            sub: !hasLastMonth ? "No data" : ""
+          },
+          {
+            label: "Prediction",
+            value: currentMonth.length ? `$${prediction.predicted.toFixed(2)}` : "—",
+            sub: currentMonth.length ? `${prediction.dailyAverage.toFixed(2)}/day` : ""
+          }
+        ].map((card, i) => (
+          <div
+            key={i}
+            className="group bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-xl hover:scale-[1.03] hover:border-emerald-400/30 transition duration-300 shadow-lg"
+          >
+            <p className="text-sm text-gray-400 mb-1">{card.label}</p>
+            <p className="text-2xl font-bold text-white">{card.value}</p>
+            <p className="text-xs mt-1 text-gray-400">{card.sub}</p>
+          </div>
+        ))}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <StatCard
-          label="This Month"
-          value={`$${currentTotal.toFixed(2)}`}
-          subtext={changeText}
-          subtextColor={changeText ? (currentTotal > lastTotal ? "text-red-500" : "text-green-500") : undefined}
-        />
-        <StatCard
-          label="Last Month"
-          value={hasLastMonth ? `$${lastTotal.toFixed(2)}` : "—"}
-          subtext={!hasLastMonth ? "No data yet" : undefined}
-        />
-        <StatCard
-          label="Predicted End of Month"
-          value={currentMonth.length > 0 ? `$${prediction.predicted.toFixed(2)}` : "—"}
-          subtext={currentMonth.length > 0 ? `$${prediction.dailyAverage.toFixed(2)}/day avg` : "Add expenses to predict"}
-        />
-        <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-5">
-          <p className="text-sm text-gray-500">Budget</p>
+        {/* Budget Card */}
+        <div className="bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-xl hover:scale-[1.03] transition shadow-lg">
+          <p className="text-sm text-gray-400">Budget</p>
           {budget ? (
             <>
-              <p className="text-2xl font-bold text-gray-900">${budget.toFixed(2)}</p>
+              <p className="text-2xl font-bold text-white">${budget.toFixed(2)}</p>
               <BudgetProgress spent={currentTotal} budget={budget} />
             </>
           ) : (
-            <p className="text-sm text-gray-400 mt-1">No budget set</p>
+            <p className="text-gray-400 text-sm">No budget</p>
           )}
         </div>
+
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-5">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Spending by Category</h2>
-          {categoryData.length > 0 ? (
-            <ResponsiveContainer width="100%" height={250}>
-              <PieChart>
-                <Pie
-                  data={categoryData}
-                  cx="50%"
-                  cy="50%"
-                  outerRadius={90}
-                  dataKey="value"
-                  label={({ name, percent }) =>
-                    `${name} ${((percent ?? 0) * 100).toFixed(0)}%`
+      {/* CHARTS */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+
+        <div className="bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-xl shadow-lg hover:shadow-emerald-500/10 transition">
+          <h2 className="text-lg font-semibold mb-4 text-white">Spending by Category</h2>
+          <ResponsiveContainer width="100%" height={260}>
+            <PieChart>
+              
+              <Pie
+                data={categoryData}
+                dataKey="value"
+                nameKey="name"
+                cx="50%"
+                cy="50%"
+                outerRadius={90}
+                label={({ name, percent }) =>
+                  `${name} (${((percent ?? 0) * 100).toFixed(0)}%)`
+                }
+              >
+                {categoryData.map((entry, index) => (
+                  <Cell key={index} fill={COLORS[index % COLORS.length]} />
+                ))}
+              </Pie>
+
+              <Tooltip
+                content={({ active, payload }) => {
+                  if (active && payload && payload.length) {
+                    const data = payload[0];
+                    return (
+                      <div className="bg-black/80 border border-white/10 backdrop-blur-md px-4 py-2 rounded-lg shadow-lg">
+                        <p className="text-gray-400 text-xs">{data.name}</p>
+                        <p className="text-emerald-400 font-semibold">
+                          ${Number(data.value).toFixed(2)}
+                        </p>
+                      </div>
+                    );
                   }
-                >
-                  {categoryData.map((_, i) => (
-                    <Cell key={i} fill={COLORS[i % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip formatter={(v) => `$${Number(v).toFixed(2)}`} />
-              </PieChart>
-            </ResponsiveContainer>
-          ) : (
-            <p className="text-gray-400 text-sm">No expenses this month</p>
-          )}
+                  return null;
+                }}
+              />
+
+              <Legend
+              verticalAlign="bottom"
+              height={36}
+              formatter={(value) => <span className="text-sm text-gray-300">{value}</span>}
+            />
+
+            </PieChart>
+          </ResponsiveContainer>
         </div>
 
-        <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-5">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Monthly Spending Trend</h2>
-          {trendData.length > 1 ? (
-            <ResponsiveContainer width="100%" height={250}>
-              <LineChart data={trendData}>
-                <XAxis dataKey="month" tick={{ fontSize: 12 }} />
-                <YAxis tick={{ fontSize: 12 }} />
-                <Tooltip formatter={(v) => `$${Number(v).toFixed(2)}`} />
-                <Line
-                  type="monotone"
-                  dataKey="total"
-                  stroke="#6366f1"
-                  strokeWidth={2}
-                  dot={{ fill: "#6366f1", r: 4 }}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          ) : (
-            <p className="text-gray-400 text-sm">Need at least 2 months of data for trends</p>
-          )}
-        </div>
-      </div>
-
-      <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-5 mb-8">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Category Totals</h2>
-        {categoryData.length > 0 ? (
-          <ResponsiveContainer width="100%" height={250}>
+        <div className="bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-xl shadow-lg hover:shadow-purple-500/10 transition">
+          <h2 className="text-lg font-semibold mb-4 text-white">Monthly Trend</h2>
+          <ResponsiveContainer width="100%" height={260}>
             <BarChart data={categoryData}>
-              <XAxis dataKey="name" tick={{ fontSize: 12 }} />
-              <YAxis tick={{ fontSize: 12 }} />
-              <Tooltip formatter={(v) => `$${Number(v).toFixed(2)}`} />
-              <Bar dataKey="value" fill="#6366f1" radius={[4, 4, 0, 0]} />
+              
+              <XAxis dataKey="name" stroke="#aaa" />
+              <YAxis stroke="#aaa" />
+
+              <Tooltip
+                content={({ active, payload }) => {
+                  if (active && payload && payload.length) {
+                    const data = payload[0];
+                    return (
+                      <div className="bg-black/80 border border-white/10 backdrop-blur-md px-4 py-2 rounded-lg shadow-lg">
+                        <p className="text-gray-400 text-xs">{data.name}</p>
+                        <p className="text-emerald-400 font-semibold">
+                          ${Number(data.value).toFixed(2)}
+                        </p>
+                      </div>
+                    );
+                  }
+                  return null;
+                }}
+              />
+
+              <Bar dataKey="value" radius={[6, 6, 0, 0]}>
+                {categoryData.map((entry, index) => (
+                  <Cell key={index} fill={COLORS[index % COLORS.length]} />
+                ))}
+              </Bar>
+
             </BarChart>
           </ResponsiveContainer>
-        ) : (
-          <p className="text-gray-400 text-sm">No expenses this month</p>
-        )}
+        </div>
+
       </div>
 
-      <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-5">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Recent Expenses</h2>
-        {recentExpenses.length > 0 ? (
-          <div className="divide-y divide-gray-100">
-            {recentExpenses.map((e) => (
-              <div key={e.id} className="flex items-center justify-between py-3">
-                <div>
-                  <p className="text-sm font-medium text-gray-900">{e.description}</p>
-                  <p className="text-xs text-gray-500">
-                    {e.category} &middot; {new Date(e.date).toLocaleDateString()}
-                  </p>
-                </div>
-                <p className="text-sm font-semibold text-gray-900">${e.amount.toFixed(2)}</p>
-              </div>
-            ))}
+      {/* RECENT */}
+      <div className="bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-xl shadow-lg">
+        <h2 className="text-lg font-semibold mb-4 text-white">Recent Expenses</h2>
+
+        {recentExpenses.map((e) => (
+          <div key={e.id} className="flex justify-between py-3 border-b border-white/10 last:border-none">
+            <div>
+              <p className="text-white font-medium">{e.description}</p>
+              <p className="text-gray-400 text-xs">
+                {e.category} • {new Date(e.date).toLocaleDateString()}
+              </p>
+            </div>
+            <p className="text-emerald-400 font-semibold">${e.amount.toFixed(2)}</p>
           </div>
-        ) : (
-          <p className="text-gray-400 text-sm">No expenses yet</p>
-        )}
+        ))}
       </div>
+
     </div>
-  );
+
+    {/* ANIMATION */}
+    <style jsx>{`
+      @keyframes gradient-x {
+        0%,100% { background-size: 200% 200%; background-position: left center; }
+        50% { background-position: right center; }
+      }
+      .animate-gradient-x {
+        animation: gradient-x 6s ease infinite;
+      }
+    `}</style>
+
+  </div>
+);
 }

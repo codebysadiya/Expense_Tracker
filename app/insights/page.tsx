@@ -7,7 +7,6 @@ import { getExpenses, getBudget } from "@/lib/firestore";
 import { useDataRefresh } from "@/lib/useDataRefresh";
 import { fetchInsights } from "@/lib/api";
 import { Insight } from "@/lib/types";
-import StatCard from "@/components/StatCard";
 import InsightCard from "@/components/InsightCard";
 import { format } from "date-fns";
 
@@ -67,39 +66,148 @@ export default function InsightsPage() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Insights</h1>
+  <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
-        {prediction && prediction.predicted > 0 && (
-          <StatCard
-            label="Predicted End-of-Month Spending"
-            value={`$${prediction.predicted.toFixed(2)}`}
-            subtext={`Based on $${prediction.dailyAverage.toFixed(2)}/day average`}
-          />
-        )}
-        {nextMonthPrediction !== null && nextMonthPrediction > 0 && (
-          <StatCard
-            label="Next Month Forecast"
-            value={`$${nextMonthPrediction.toFixed(2)}`}
-            subtext="Based on historical trend"
-          />
-        )}
+    {/* HEADER */}
+    <div className="mb-8 relative overflow-hidden rounded-3xl border border-white/10 bg-white/5 backdrop-blur-2xl p-8 shadow-[0_0_50px_rgba(0,0,0,0.35)]">
+
+      {/* GLOW EFFECTS */}
+      <div className="absolute top-0 left-0 w-72 h-72 bg-purple-500/10 blur-3xl rounded-full"></div>
+      <div className="absolute bottom-0 right-0 w-72 h-72 bg-emerald-400/10 blur-3xl rounded-full"></div>
+
+      <div className="relative z-10">
+        <h1 className="text-4xl font-black bg-linear-to-r from-emerald-400 via-cyan-400 to-purple-500 text-transparent bg-clip-text mb-3">
+          AI Insights
+        </h1>
+
+        <p className="text-gray-400 text-sm sm:text-base max-w-2xl leading-relaxed">
+          Analyze your spending behavior, predict future expenses, and receive smart financial recommendations powered by ExpenseAI.
+        </p>
       </div>
+    </div>
 
-      {insights.length > 0 ? (
-        <div className="space-y-4">
-          {insights.map((insight, i) => (
-            <InsightCard key={i} insight={insight} />
-          ))}
-        </div>
-      ) : (
-        <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-8 text-center">
-          <p className="text-gray-400">
-            Not enough data to generate insights yet. Add more expenses to get personalized recommendations.
-          </p>
+    {/* STATS */}
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-8">
+
+      {prediction && prediction.predicted > 0 && (
+        <div className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-6 shadow-lg hover:scale-[1.02] transition-all duration-300">
+
+          {/* GLOW */}
+          <div className="absolute inset-0 bg-linear-to-r from-emerald-400/5 to-cyan-400/5 opacity-0 group-hover:opacity-100 transition"></div>
+
+          <div className="relative z-10">
+
+            <div className="flex items-center justify-between mb-4">
+              <div className="w-12 h-12 rounded-xl bg-emerald-400/10 flex items-center justify-center border border-emerald-400/20">
+                <span className="text-2xl">📈</span>
+              </div>
+
+              <span className="text-xs text-emerald-400 font-medium px-3 py-1 rounded-full bg-emerald-400/10 border border-emerald-400/20">
+                Prediction
+              </span>
+            </div>
+
+            <p className="text-sm text-gray-400 mb-2">
+              Predicted End-of-Month Spending
+            </p>
+
+            <h2 className="text-4xl font-black text-white mb-2">
+              ${prediction.predicted.toFixed(2)}
+            </h2>
+
+            <p className="text-sm text-gray-400">
+              Based on{" "}
+              <span className="text-cyan-400 font-medium">
+                ${prediction.dailyAverage.toFixed(2)}/day
+              </span>{" "}
+              average
+            </p>
+
+          </div>
         </div>
       )}
+
+      {nextMonthPrediction !== null && nextMonthPrediction > 0 && (
+        <div className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-6 shadow-lg hover:scale-[1.02] transition-all duration-300">
+
+          {/* GLOW */}
+          <div className="absolute inset-0 bg-linear-to-r from-purple-500/5 to-pink-500/5 opacity-0 group-hover:opacity-100 transition"></div>
+
+          <div className="relative z-10">
+
+            <div className="flex items-center justify-between mb-4">
+              <div className="w-12 h-12 rounded-xl bg-purple-500/10 flex items-center justify-center border border-purple-400/20">
+                <span className="text-2xl">🔮</span>
+              </div>
+
+              <span className="text-xs text-purple-300 font-medium px-3 py-1 rounded-full bg-purple-500/10 border border-purple-400/20">
+                Forecast
+              </span>
+            </div>
+
+            <p className="text-sm text-gray-400 mb-2">
+              Next Month Forecast
+            </p>
+
+            <h2 className="text-4xl font-black text-white mb-2">
+              ${nextMonthPrediction.toFixed(2)}
+            </h2>
+
+            <p className="text-sm text-gray-400">
+              Based on historical spending trends
+            </p>
+
+          </div>
+        </div>
+      )}
+
     </div>
-  );
+
+    {/* INSIGHTS */}
+    {insights.length > 0 ? (
+      <div className="space-y-5">
+
+        {insights.map((insight, i) => (
+          <div
+            key={i}
+            className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-6 shadow-lg hover:bg-white/[0.07] transition-all duration-300"
+          >
+
+            {/* HOVER GLOW */}
+            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition duration-500 bg-linear-to-r from-cyan-400/[0.03] via-purple-500/[0.03] to-emerald-400/[0.03]"></div>
+
+            <div className="relative z-10">
+              <InsightCard insight={insight} />
+            </div>
+
+          </div>
+        ))}
+
+      </div>
+    ) : (
+      <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-white/5 backdrop-blur-2xl p-12 text-center shadow-lg">
+
+        {/* GLOW */}
+        <div className="absolute inset-0 bg-linear-to-r from-purple-500/5 to-emerald-400/5"></div>
+
+        <div className="relative z-10">
+
+          <div className="w-20 h-20 mx-auto rounded-full bg-white/5 border border-white/10 flex items-center justify-center mb-5">
+            <span className="text-4xl">🧠</span>
+          </div>
+
+          <h2 className="text-2xl font-bold text-white mb-3">
+            Not Enough Data Yet
+          </h2>
+
+          <p className="text-gray-400 max-w-md mx-auto leading-relaxed">
+            Add more expenses to unlock personalized AI insights, spending predictions, and financial recommendations.
+          </p>
+
+        </div>
+      </div>
+    )}
+
+  </div>
+);
 }

@@ -108,133 +108,309 @@ export default function BudgetPage() {
   const sortedCategories = Object.entries(byCategory).sort((a, b) => b[1] - a[1]);
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Budget</h1>
+  <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
-      <div className="flex flex-col md:flex-row gap-6">
-        {/* Month sidebar */}
-        <div className="md:w-48 shrink-0">
-          <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
-            <div className="px-4 py-3 bg-gray-50 border-b border-gray-100">
-              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Months</p>
-            </div>
-            <div className="max-h-96 overflow-y-auto">
-              {months.map((m) => (
-                <button
-                  key={m}
-                  onClick={() => setSelectedMonth(m)}
-                  className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${
-                    m === selectedMonth
-                      ? "bg-indigo-50 text-indigo-700 font-medium border-l-2 border-indigo-600"
-                      : "text-gray-600 hover:bg-gray-50"
-                  }`}
-                >
+    {/* HEADER */}
+    <div className="mb-8">
+      <h1 className="text-3xl font-bold bg-linear-to-r from-emerald-400 via-cyan-400 to-purple-500 text-transparent bg-clip-text">
+        Budget Planner
+      </h1>
+
+      <p className="text-gray-400 mt-2 text-sm">
+        Track monthly budgets and control your spending intelligently.
+      </p>
+    </div>
+
+    <div className="flex flex-col md:flex-row gap-6">
+
+      {/* SIDEBAR */}
+      <div className="md:w-56 shrink-0">
+
+        <div className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl shadow-[0_0_30px_rgba(0,0,0,0.3)] overflow-hidden">
+
+          {/* TITLE */}
+          <div className="px-4 py-4 border-b border-white/10 bg-white/5">
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-[0.2em]">
+              Months
+            </p>
+          </div>
+
+          {/* MONTH LIST */}
+          <div className="max-h-[500px] overflow-y-auto">
+
+            {months.map((m) => (
+              <button
+                key={m}
+                onClick={() => setSelectedMonth(m)}
+                className={`group relative w-full text-left px-4 py-3 text-sm transition-all duration-300 ${
+                  m === selectedMonth
+                    ? "bg-white/10 text-white border-l-2 border-emerald-400"
+                    : "text-gray-300 hover:bg-white/5"
+                }`}
+              >
+
+                {/* ACTIVE GLOW */}
+                {m === selectedMonth && (
+                  <div className="absolute inset-0 bg-emerald-400/5 pointer-events-none"></div>
+                )}
+
+                <span className="relative z-10">
                   {format(new Date(m + "-01"), "MMM yyyy")}
-                </button>
-              ))}
-            </div>
+                </span>
+
+              </button>
+            ))}
+
           </div>
         </div>
+      </div>
 
-        {/* Main content */}
-        <div className="flex-1 min-w-0">
-          {loading ? (
-            <div className="flex items-center justify-center min-h-[200px]">
-              <div className="text-gray-400">Loading budget...</div>
+      {/* MAIN CONTENT */}
+      <div className="flex-1 min-w-0">
+
+        {loading ? (
+          <div className="flex items-center justify-center min-h-[300px] backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl">
+            <div className="text-gray-400 animate-pulse">
+              Loading budget...
             </div>
-          ) : (
-            <>
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">
+          </div>
+        ) : (
+          <>
+
+            {/* MONTH TITLE */}
+            <div className="mb-5">
+              <h2 className="text-2xl font-semibold text-white">
                 {format(new Date(selectedMonth + "-01"), "MMMM yyyy")}
               </h2>
 
-              {/* Set budget */}
-              <form onSubmit={handleSave} className="bg-white rounded-lg border border-gray-200 shadow-sm p-5 mb-6">
-                <h3 className="text-base font-semibold text-gray-900 mb-3">Monthly Budget</h3>
-                <div className="flex gap-3 items-end">
-                  <div className="flex-1">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Amount ($)</label>
-                    <input
-                      type="number" step="0.01" min="1" required value={inputAmount}
-                      onChange={(e) => setInputAmount(e.target.value)}
-                      className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                      placeholder="e.g. 2000"
-                    />
-                  </div>
-                  <button type="submit" disabled={saving}
-                    className="bg-indigo-600 text-white px-5 py-2 rounded-md text-sm font-medium hover:bg-indigo-700 disabled:opacity-50 transition-colors">
-                    {saving ? "Saving..." : budgetAmount ? "Update" : "Set Budget"}
-                  </button>
-                </div>
-              </form>
+              <p className="text-sm text-gray-400 mt-1">
+                Financial overview and spending analysis
+              </p>
+            </div>
 
-              {/* Budget progress */}
-              {budgetAmount ? (
-                <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-5 mb-6">
-                  <h3 className="text-base font-semibold text-gray-900 mb-4">Progress</h3>
-                  <BudgetProgress spent={totalSpent} budget={budgetAmount} showAlert={isCurrentMonth} />
-                  <div className="flex justify-between text-sm text-gray-600 mt-4 mb-2">
-                    <span>Spent: ${totalSpent.toFixed(2)}</span>
-                    <span>Budget: ${budgetAmount.toFixed(2)}</span>
+            {/* SET BUDGET */}
+            <form
+              onSubmit={handleSave}
+              className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl shadow-lg p-6 mb-6"
+            >
+
+              <h3 className="text-lg font-semibold text-white mb-5">
+                Monthly Budget
+              </h3>
+
+              <div className="flex flex-col sm:flex-row gap-4 items-end">
+
+                <div className="flex-1 w-full">
+                  <label className="block text-sm text-gray-300 mb-2">
+                    Amount ($)
+                  </label>
+
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="1"
+                    required
+                    value={inputAmount}
+                    onChange={(e) => setInputAmount(e.target.value)}
+                    placeholder="e.g. 2000"
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-400"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={saving}
+                  className="bg-linear-to-r from-emerald-400 to-purple-500 text-black px-6 py-3 rounded-xl text-sm font-semibold hover:scale-105 transition-all duration-300 disabled:opacity-50 shadow-lg"
+                >
+                  {saving
+                    ? "Saving..."
+                    : budgetAmount
+                    ? "Update Budget"
+                    : "Set Budget"}
+                </button>
+
+              </div>
+            </form>
+
+            {/* PROGRESS */}
+            {budgetAmount ? (
+              <div className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl shadow-lg p-6 mb-6">
+
+                <h3 className="text-lg font-semibold text-white mb-5">
+                  Budget Progress
+                </h3>
+
+                <BudgetProgress
+                  spent={totalSpent}
+                  budget={budgetAmount}
+                  showAlert={isCurrentMonth}
+                />
+
+                <div className="flex justify-between text-sm text-gray-300 mt-5 mb-4">
+                  <span>
+                    Spent:
+                    <span className="text-red-400 font-semibold ml-1">
+                      ${totalSpent.toFixed(2)}
+                    </span>
+                  </span>
+
+                  <span>
+                    Budget:
+                    <span className="text-emerald-400 font-semibold ml-1">
+                      ${budgetAmount.toFixed(2)}
+                    </span>
+                  </span>
+                </div>
+
+                {/* STATS */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6">
+
+                  {/* USED */}
+                  <div className="backdrop-blur-lg bg-white/5 border border-white/10 rounded-xl p-5 text-center hover:bg-white/10 transition">
+
+                    <p className="text-3xl font-bold text-white">
+                      {Math.min(
+                        (totalSpent / budgetAmount) * 100,
+                        100
+                      ).toFixed(0)}%
+                    </p>
+
+                    <p className="text-xs text-gray-400 mt-1">
+                      Used
+                    </p>
+
                   </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center mt-4">
-                    <div>
-                      <p className="text-2xl font-bold text-gray-900">{Math.min((totalSpent / budgetAmount) * 100, 100).toFixed(0)}%</p>
-                      <p className="text-xs text-gray-500">Used</p>
-                    </div>
-                    <div>
-                      <p className={`text-2xl font-bold ${remaining! >= 0 ? "text-green-600" : "text-red-600"}`}>${Math.abs(remaining!).toFixed(2)}</p>
-                      <p className="text-xs text-gray-500">{remaining! >= 0 ? "Remaining" : "Over budget"}</p>
-                    </div>
-                    <div>
-                      {isCurrentMonth ? (
-                        <>
-                          <p className="text-2xl font-bold text-gray-900">{dailyBudget ? `$${dailyBudget.toFixed(2)}` : "—"}</p>
-                          <p className="text-xs text-gray-500">/day for {daysLeft} days left</p>
-                        </>
-                      ) : (
-                        <>
-                          <p className="text-2xl font-bold text-gray-900">{monthExpenses.length}</p>
-                          <p className="text-xs text-gray-500">Transactions</p>
-                        </>
-                      )}
-                    </div>
+
+                  {/* REMAINING */}
+                  <div className="backdrop-blur-lg bg-white/5 border border-white/10 rounded-xl p-5 text-center hover:bg-white/10 transition">
+
+                    <p
+                      className={`text-3xl font-bold ${
+                        remaining! >= 0
+                          ? "text-emerald-400"
+                          : "text-red-400"
+                      }`}
+                    >
+                      ${Math.abs(remaining!).toFixed(2)}
+                    </p>
+
+                    <p className="text-xs text-gray-400 mt-1">
+                      {remaining! >= 0
+                        ? "Remaining"
+                        : "Over Budget"}
+                    </p>
+
                   </div>
+
+                  {/* DAILY */}
+                  <div className="backdrop-blur-lg bg-white/5 border border-white/10 rounded-xl p-5 text-center hover:bg-white/10 transition">
+
+                    {isCurrentMonth ? (
+                      <>
+                        <p className="text-3xl font-bold text-cyan-400">
+                          {dailyBudget
+                            ? `$${dailyBudget.toFixed(2)}`
+                            : "—"}
+                        </p>
+
+                        <p className="text-xs text-gray-400 mt-1">
+                          /day for {daysLeft} days left
+                        </p>
+                      </>
+                    ) : (
+                      <>
+                        <p className="text-3xl font-bold text-purple-400">
+                          {monthExpenses.length}
+                        </p>
+
+                        <p className="text-xs text-gray-400 mt-1">
+                          Transactions
+                        </p>
+                      </>
+                    )}
+
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl shadow-lg p-10 mb-6 text-center">
+
+                <p className="text-gray-400 text-sm">
+                  No budget set for this month.
+                </p>
+
+                <p className="text-gray-500 text-xs mt-2">
+                  Set a monthly target to start tracking spending patterns.
+                </p>
+
+              </div>
+            )}
+
+            {/* CATEGORY BREAKDOWN */}
+            <div className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl shadow-lg p-6">
+
+              <h3 className="text-lg font-semibold text-white mb-5">
+                Spending by Category
+              </h3>
+
+              {sortedCategories.length > 0 ? (
+                <div className="space-y-4">
+
+                  {sortedCategories.map(([cat, amount], index) => {
+                    const catPct = budgetAmount
+                      ? (amount / budgetAmount) * 100
+                      : 0;
+
+                    const colors = [
+                      "from-emerald-400 to-green-500",
+                      "from-purple-400 to-pink-500",
+                      "from-cyan-400 to-blue-500",
+                      "from-orange-400 to-red-500",
+                      "from-yellow-400 to-orange-500",
+                    ];
+
+                    return (
+                      <div key={cat}>
+
+                        <div className="flex justify-between text-sm mb-2">
+                          <span className="font-medium text-gray-200">
+                            {cat}
+                          </span>
+
+                          <span className="text-gray-400">
+                            ${amount.toFixed(2)}
+                          </span>
+                        </div>
+
+                        <div className="h-3 bg-white/10 rounded-full overflow-hidden">
+
+                          <div
+                            className={`h-full rounded-full bg-linear-to-r ${
+                              colors[index % colors.length]
+                            } shadow-lg`}
+                            style={{
+                              width: `${Math.min(catPct, 100)}%`,
+                            }}
+                          />
+
+                        </div>
+
+                      </div>
+                    );
+                  })}
+
                 </div>
               ) : (
-                <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-5 mb-6 text-center">
-                  <p className="text-gray-400 text-sm">No budget set for this month. Set one above to track your spending.</p>
-                </div>
+                <p className="text-gray-400 text-sm">
+                  No expenses for this month
+                </p>
               )}
+            </div>
 
-              {/* Category breakdown */}
-              <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-5">
-                <h3 className="text-base font-semibold text-gray-900 mb-4">Spending by Category</h3>
-                {sortedCategories.length > 0 ? (
-                  <div className="space-y-3">
-                    {sortedCategories.map(([cat, amount]) => {
-                      const catPct = budgetAmount ? (amount / budgetAmount) * 100 : 0;
-                      return (
-                        <div key={cat}>
-                          <div className="flex justify-between text-sm mb-1">
-                            <span className="font-medium text-gray-700">{cat}</span>
-                            <span className="text-gray-500">${amount.toFixed(2)}</span>
-                          </div>
-                          <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-                            <div className="h-full bg-indigo-500 rounded-full" style={{ width: `${Math.min(catPct, 100)}%` }} />
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                ) : (
-                  <p className="text-gray-400 text-sm">No expenses for this month</p>
-                )}
-              </div>
-            </>
-          )}
-        </div>
+          </>
+        )}
       </div>
     </div>
-  );
+  </div>
+);
 }
