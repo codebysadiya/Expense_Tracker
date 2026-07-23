@@ -2,7 +2,7 @@
 
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState, useCallback } from "react";
+import { useEffect, useMemo, useState, useCallback, useRef } from "react";
 import { getExpenses, addExpense, updateExpense, deleteExpense, getAllBudgets } from "@/lib/firestore";
 import { useDataRefresh } from "@/lib/useDataRefresh";
 import { Expense, Budget, CATEGORIES } from "@/lib/types";
@@ -39,6 +39,17 @@ export default function ExpensesPage() {
   } | null>(null);
 
   const [open, setOpen] = useState(false);
+  const filterDropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (filterDropdownRef.current && !filterDropdownRef.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const months = generateMonthList(12);
 
@@ -291,9 +302,9 @@ export default function ExpensesPage() {
         <div className="flex items-center justify-between mb-5">
 
           {/* (keep your select for now – can upgrade later if you want) */}
-          <div className="relative">
+          <div ref={filterDropdownRef} className="relative">
   <button
-    onClick={() => setOpen(!open)}
+    onClick={() => setOpen((prev) => !prev)}
     className="min-w-[180px] px-4 py-2 rounded-xl text-sm
                bg-white/5 border border-white/10 text-gray-200
                backdrop-blur-xl shadow-lg
@@ -301,12 +312,12 @@ export default function ExpensesPage() {
                hover:bg-white/10 transition"
   >
     <span>{filterCategory === "All" ? "All Categories" : filterCategory}</span>
-    <span className="text-gray-400">▾</span>
+    <span className={`text-gray-400 transition-transform ${open ? "rotate-180" : ""}`}>▾</span>
   </button>
 
   {open && (
     <div
-            className="absolute z-50 mt-2 w-full rounded-xl overflow-hidden
+            className="absolute z-50 mt-2 w-full max-h-64 overflow-y-auto rounded-xl
                       bg-black/40 backdrop-blur-xl border border-white/10 shadow-2xl"
           >
             <button
@@ -314,7 +325,11 @@ export default function ExpensesPage() {
                 setFilterCategory("All");
                 setOpen(false);
               }}
-              className="w-full text-left px-4 py-2 text-b hover:bg-white/10 text-emerald-400"
+              className={`w-full text-left px-4 py-2 text-sm transition ${
+                filterCategory === "All"
+                  ? "bg-emerald-500/15 text-emerald-300 font-medium"
+                  : "text-gray-200 hover:bg-white/10"
+              }`}
             >
               All Categories
             </button>
@@ -326,7 +341,11 @@ export default function ExpensesPage() {
                   setFilterCategory(c);
                   setOpen(false);
                 }}
-                className="w-full text-left px-4 py-2 text-sm hover:bg-emerald-950 text-gray-200"
+                className={`w-full text-left px-4 py-2 text-sm transition ${
+                  filterCategory === c
+                    ? "bg-emerald-500/15 text-emerald-300 font-medium"
+                    : "text-gray-200 hover:bg-white/10"
+                }`}
               >
                 {c}
               </button>

@@ -23,27 +23,69 @@ export default function InsightsPage() {
     if (!authLoading && !user) router.replace("/login");
   }, [user, authLoading, router]);
 
-  const loadData = useCallback(async () => {
-    if (!user) return;
+const loadData = useCallback(async () => {
+  if (!user) return;
+
+  try {
+    const [expenses, budget] = await Promise.all([
+      getExpenses(user.uid),
+      getBudget(user.uid, format(new Date(), "yyyy-MM")),
+    ]);
+
+    const data = await fetchInsights(expenses, budget?.amount);
+
+    setInsights(data.insights as Insight[]);
+    setPrediction(data.prediction);
+    setNextMonthPrediction(data.nextMonthPrediction);
+  } catch (err) {
+    setError(
+      err instanceof Error ? err.message : "Failed to load insights"
+    );
+  } finally {
+    setLoading(false);
+  }
+}, [user]);
+
+useEffect(() => {
+  if (!user) return;
+
+  let cancelled = false;
+
+  const loadInitialData = async () => {
     try {
       const [expenses, budget] = await Promise.all([
         getExpenses(user.uid),
         getBudget(user.uid, format(new Date(), "yyyy-MM")),
       ]);
+
       const data = await fetchInsights(expenses, budget?.amount);
+
+      if (cancelled) return;
+
       setInsights(data.insights as Insight[]);
       setPrediction(data.prediction);
       setNextMonthPrediction(data.nextMonthPrediction);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load insights");
+      if (cancelled) return;
+
+      setError(
+        err instanceof Error ? err.message : "Failed to load insights"
+      );
     } finally {
-      setLoading(false);
+      if (!cancelled) {
+        setLoading(false);
+      }
     }
-  }, [user]);
+  };
 
-  useEffect(() => { loadData(); }, [loadData]);
+  loadInitialData();
 
-  useDataRefresh(loadData);
+  return () => {
+    cancelled = true;
+  };
+}, [user]);
+
+useDataRefresh(loadData);
 
   if (authLoading || !user || loading) {
     return (

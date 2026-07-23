@@ -2,7 +2,7 @@
 
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, startTransition } from "react";
 import { getExpenses, getBudget, getSavingsGoals, getDebts } from "@/lib/firestore";
 import { useDataRefresh } from "@/lib/useDataRefresh";
 import { Expense, SavingsGoal, Debt } from "@/lib/types";
@@ -56,15 +56,19 @@ export default function DashboardPage() {
         getSavingsGoals(user.uid),
         getDebts(user.uid),
       ]);
-      setExpenses(exps);
-      setBudgetAmount(bud?.amount ?? null);
-      setBudgetObj(bud);
-      setSavingsGoals(goals);
-      setDebts(dts);
+      startTransition(() => {
+        setExpenses(exps);
+        setBudgetAmount(bud?.amount ?? null);
+        setBudgetObj(bud);
+        setSavingsGoals(goals);
+        setDebts(dts);
+        setLoading(false);
+      });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load dashboard data");
-    } finally {
-      setLoading(false);
+      startTransition(() => {
+        setError(err instanceof Error ? err.message : "Failed to load dashboard data");
+        setLoading(false);
+      });
     }
   }, [user]);
 
@@ -126,8 +130,6 @@ export default function DashboardPage() {
     hasLastMonth && lastTotal > 0
       ? `${currentTotal > lastTotal ? "+" : ""}${Math.round(((currentTotal - lastTotal) / lastTotal) * 100)}% vs last month`
       : undefined;
-
-  const isNewUser = expenses.length === 0;
 
   return (
   <div className="relative min-h-screen bg-black text-white overflow-hidden px-4 sm:px-6 lg:px-8 py-8">
@@ -211,7 +213,7 @@ export default function DashboardPage() {
 
         <div className="bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-xl shadow-lg hover:shadow-emerald-500/10 transition">
           <h2 className="text-lg font-semibold mb-4 text-white">Spending by Category</h2>
-          <ResponsiveContainer width="100%" height={260}>
+          <ResponsiveContainer width="100%" height={280}>
             <PieChart>
               
               <Pie
@@ -260,9 +262,9 @@ export default function DashboardPage() {
         <div className="bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-xl shadow-lg hover:shadow-purple-500/10 transition">
           <h2 className="text-lg font-semibold mb-4 text-white">Monthly Trend</h2>
           <ResponsiveContainer width="100%" height={260}>
-            <BarChart data={categoryData}>
-              
-              <XAxis dataKey="name" stroke="#aaa" />
+            <BarChart data={trendData}>
+
+              <XAxis dataKey="month" stroke="#aaa" />
               <YAxis stroke="#aaa" />
 
               <Tooltip
@@ -271,7 +273,7 @@ export default function DashboardPage() {
                     const data = payload[0];
                     return (
                       <div className="bg-black/80 border border-white/10 backdrop-blur-md px-4 py-2 rounded-lg shadow-lg">
-                        <p className="text-gray-400 text-xs">{data.name}</p>
+                        <p className="text-gray-400 text-xs">{data.payload.month}</p>
                         <p className="text-emerald-400 font-semibold">
                           ${Number(data.value).toFixed(2)}
                         </p>
@@ -282,11 +284,7 @@ export default function DashboardPage() {
                 }}
               />
 
-              <Bar dataKey="value" radius={[6, 6, 0, 0]}>
-                {categoryData.map((entry, index) => (
-                  <Cell key={index} fill={COLORS[index % COLORS.length]} />
-                ))}
-              </Bar>
+              <Bar dataKey="total" radius={[6, 6, 0, 0]} fill={COLORS[0]} />
 
             </BarChart>
           </ResponsiveContainer>

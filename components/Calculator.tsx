@@ -11,21 +11,20 @@ export default function Calculator() {
 
   // Drag state
   const [pos, setPos] = useState({ x: 0, y: 0 });
-  const [initialized, setInitialized] = useState(false);
   const dragging = useRef(false);
   const dragOffset = useRef({ x: 0, y: 0 });
   const calcRef = useRef<HTMLDivElement>(null);
 
-  // Initialize position to bottom-right
-  useEffect(() => {
-    if (open && !initialized) {
-      setPos({
-        x: window.innerWidth - 280 - 24,
-        y: window.innerHeight - 420 - 24,
-      });
-      setInitialized(true);
-    }
-  }, [open, initialized]);
+  function handleToggleCalculator() {
+  if (!open) {
+    setPos({
+      x: window.innerWidth - 280 - 24,
+      y: window.innerHeight - 420 - 24,
+    });
+  }
+
+  setOpen((prev) => !prev);
+}
 
   // Drag handlers
   function handleMouseDown(e: React.MouseEvent) {
@@ -171,7 +170,7 @@ export default function Calculator() {
     <>
       {/* Floating toggle button */}
       <button
-        onClick={() => setOpen(!open)}
+        onClick={handleToggleCalculator}
         className="fixed bottom-6 right-6 z-[60] h-12 w-12 rounded-full bg-[#333] text-white shadow-lg hover:bg-[#444] transition-all flex items-center justify-center"
         aria-label="Calculator"
       >
@@ -208,7 +207,7 @@ export default function Calculator() {
               <div className="h-3 w-3 rounded-full bg-[#febc2e] border border-[#d9a123]" />
               <div className="h-3 w-3 rounded-full bg-[#28c840] border border-[#1aab29]" />
             </div>
-            <span className="flex-1 text-center text-[11px] text-gray-400 font-medium">Calculator</span>
+            <span className="flex-1 text-center text-[15px] text-gray-200 font-medium">Calculator</span>
           </div>
 
           {/* Display */}

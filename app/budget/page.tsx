@@ -47,40 +47,92 @@ export default function BudgetPage() {
   }, [user, authLoading, router]);
 
   const loadData = useCallback(async () => {
-    if (!user) return;
+  if (!user) return;
+
+  try {
+    const [bud, exps, buds] = await Promise.all([
+      getBudget(user.uid, selectedMonth),
+      getExpenses(user.uid),
+      getAllBudgets(user.uid),
+    ]);
+
+    setBudgetAmount(bud?.amount ?? null);
+    setInputAmount(bud?.amount?.toString() ?? "");
+    setExpenses(exps);
+    setAllBudgets(buds);
+  } catch (err) {
+    setError(
+      err instanceof Error
+        ? err.message
+        : "Failed to load budget data"
+    );
+  } finally {
+    setLoading(false);
+  }
+}, [user, selectedMonth]);
+
+// Calculate which months have exceeded their budget
+const monthOverBudget = useMemo(() => {
+  const spent: Record<string, number> = {};
+
+  for (const e of expenses) {
+    const m = e.date.slice(0, 7);
+    spent[m] = (spent[m] || 0) + e.amount;
+  }
+
+  const map: Record<string, boolean> = {};
+
+  for (const b of allBudgets) {
+    map[b.month] = (spent[b.month] || 0) > b.amount;
+  }
+
+  return map;
+}, [expenses, allBudgets]);
+
+// Initial load and reload when selected month changes
+useEffect(() => {
+  if (!user) return;
+
+  let cancelled = false;
+
+  const loadInitialData = async () => {
     try {
       const [bud, exps, buds] = await Promise.all([
         getBudget(user.uid, selectedMonth),
         getExpenses(user.uid),
         getAllBudgets(user.uid),
       ]);
+
+      if (cancelled) return;
+
       setBudgetAmount(bud?.amount ?? null);
       setInputAmount(bud?.amount?.toString() ?? "");
       setExpenses(exps);
       setAllBudgets(buds);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load budget data");
+      if (cancelled) return;
+
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Failed to load budget data"
+      );
     } finally {
-      setLoading(false);
+      if (!cancelled) {
+        setLoading(false);
+      }
     }
-  }, [user, selectedMonth]);
+  };
 
-  const monthOverBudget = useMemo(() => {
-    const spent: Record<string, number> = {};
-    for (const e of expenses) {
-      const m = e.date.slice(0, 7);
-      spent[m] = (spent[m] || 0) + e.amount;
-    }
-    const map: Record<string, boolean> = {};
-    for (const b of allBudgets) {
-      map[b.month] = (spent[b.month] || 0) > b.amount;
-    }
-    return map;
-  }, [expenses, allBudgets]);
+  loadInitialData();
 
-  useEffect(() => { setLoading(true); loadData(); }, [loadData]);
+  return () => {
+    cancelled = true;
+  };
+}, [user, selectedMonth]);
 
-  useDataRefresh(loadData);
+// Refresh data when expense data changes
+useDataRefresh(loadData);
 
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();
