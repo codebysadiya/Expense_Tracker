@@ -221,10 +221,11 @@ export default function DashboardPage() {
                 nameKey="name"
                 cx="50%"
                 cy="50%"
-                outerRadius={75}   // slightly smaller, frees up label space
-                label={({ name, percent }) =>
-                  `${name} (${((percent ?? 0) * 100).toFixed(0)}%)`
+                outerRadius={85}   
+                label={({  percent }) =>
+                  `(${((percent ?? 0) * 100).toFixed(0)}%)`
                 }
+                labelLine={false}
               >
                 {categoryData.map((entry, index) => (
                   <Cell key={index} fill={COLORS[index % COLORS.length]} />
