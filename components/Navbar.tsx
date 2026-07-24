@@ -6,12 +6,12 @@ import { usePathname } from "next/navigation";
 import { useState, useRef, useEffect } from "react";
 
 const navItems = [
-  { href: "/dashboard", label: "🧭Dashboard" },
-  { href: "/expenses", label: "💸Expenses" },
-  { href: "/budget", label: "📊Budget" },
-  { href: "/insights", label: "📈Insights" },
-  { href: "/savings", label: "💰Savings" },
-  { href: "/debts", label: "💳Debts" },
+  { href: "/dashboard", label: "Dashboard" },
+  { href: "/expenses", label: "Expenses" },
+  { href: "/budget", label: "Budget" },
+  { href: "/insights", label: "Insights" },
+  { href: "/savings", label: "Savings" },
+  { href: "/debts", label: "Debts" },
 ];
 
 export default function Navbar() {

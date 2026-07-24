@@ -1,8 +1,11 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import { useAuth } from "@/context/AuthContext";
 
 export default function Calculator() {
+  const { user } = useAuth();
+
   const [open, setOpen] = useState(false);
   const [display, setDisplay] = useState("0");
   const [prev, setPrev] = useState<number | null>(null);
@@ -158,6 +161,8 @@ export default function Calculator() {
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [handleKeyDown]);
+
+  if (!user) return null;
 
   // Mac-style button classes
   const btnBase = "flex items-center justify-center rounded-full text-base font-medium h-12 w-full transition-all active:brightness-75 select-none";

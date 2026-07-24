@@ -158,9 +158,33 @@ export default function AIChat() {
             <line x1="6" y1="6" x2="18" y2="18" />
           </svg>
         ) : (
-
-          <span className="text-xl">🤖</span>
-
+          <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            className="drop-shadow-[0_0_6px_rgba(52,211,153,0.5)] group-hover:drop-shadow-[0_0_10px_rgba(34,211,238,0.6)] transition-all duration-300"
+          >
+            <defs>
+              <linearGradient id="aiSparkleGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#34d399" />
+                <stop offset="50%" stopColor="#22d3ee" />
+                <stop offset="100%" stopColor="#a78bfa" />
+              </linearGradient>
+            </defs>
+            {/* Primary sparkle */}
+            <path
+              d="M12 2.5C12 2.5 12.9 8.9 15.3 11.3C17.7 13.7 23.5 14.5 23.5 14.5C23.5 14.5 17.7 15.3 15.3 17.7C12.9 20.1 12 26.5 12 26.5C12 26.5 11.1 20.1 8.7 17.7C6.3 15.3 0.5 14.5 0.5 14.5C0.5 14.5 6.3 13.7 8.7 11.3C11.1 8.9 12 2.5 12 2.5Z"
+              transform="translate(0, -2.5) scale(0.85)"
+              fill="url(#aiSparkleGradient)"
+            />
+            {/* Small accent sparkle */}
+            <path
+              d="M18.5 3.5C18.5 3.5 18.85 5.3 19.7 6.15C20.55 7 22.35 7.35 22.35 7.35C22.35 7.35 20.55 7.7 19.7 8.55C18.85 9.4 18.5 11.2 18.5 11.2C18.5 11.2 18.15 9.4 17.3 8.55C16.45 7.7 14.65 7.35 14.65 7.35C14.65 7.35 16.45 7 17.3 6.15C18.15 5.3 18.5 3.5 18.5 3.5Z"
+              fill="url(#aiSparkleGradient)"
+              opacity="0.85"
+            />
+          </svg>
         )}
       </div>
     </button>
