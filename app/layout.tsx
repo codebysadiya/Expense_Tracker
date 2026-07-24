@@ -42,7 +42,7 @@ export default function RootLayout({
       lang="en"
       className={`${plusJakartaSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-gray-50">
+      <body className="min-h-full flex flex-col bg-black text-white antialiased">
         <AuthProvider>
           <Navbar />
           <main className="flex-1">{children}</main>
