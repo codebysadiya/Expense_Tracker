@@ -118,7 +118,7 @@ useDataRefresh(loadData);
       <div className="absolute bottom-0 right-0 w-72 h-72 bg-emerald-400/10 blur-3xl rounded-full"></div>
 
       <div className="relative z-10">
-        <h1 className="text-4xl font-black bg-linear-to-r from-emerald-400 via-cyan-400 to-purple-500 text-transparent bg-clip-text mb-3">
+        <h1 className="font-heading text-4xl font-black bg-linear-to-r from-emerald-400 via-cyan-400 to-purple-500 text-transparent bg-clip-text mb-3">
           AI Insights
         </h1>
 

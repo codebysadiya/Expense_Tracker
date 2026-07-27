@@ -174,24 +174,30 @@ export default function Calculator() {
   return (
     <>
       {/* Floating toggle button */}
-      <button
-        onClick={handleToggleCalculator}
-        className="fixed bottom-6 right-6 z-[60] h-12 w-12 rounded-full bg-[#333] text-white shadow-lg hover:bg-[#444] transition-all flex items-center justify-center"
-        aria-label="Calculator"
-      >
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <rect x="4" y="2" width="16" height="20" rx="2" />
-          <line x1="8" y1="6" x2="16" y2="6" />
-          <line x1="8" y1="10" x2="8" y2="10.01" />
-          <line x1="12" y1="10" x2="12" y2="10.01" />
-          <line x1="16" y1="10" x2="16" y2="10.01" />
-          <line x1="8" y1="14" x2="8" y2="14.01" />
-          <line x1="12" y1="14" x2="12" y2="14.01" />
-          <line x1="16" y1="14" x2="16" y2="14.01" />
-          <line x1="8" y1="18" x2="8" y2="18.01" />
-          <line x1="12" y1="18" x2="16" y2="18" />
-        </svg>
-      </button>
+<button
+  onClick={handleToggleCalculator}
+  className="fixed bottom-6 right-6 z-[60] h-14 w-14 rounded-full
+             bg-gradient-to-br from-emerald-400 to-purple-500
+             text-black shadow-[0_10px_30px_-5px_rgba(16,185,129,0.5)]
+             hover:shadow-[0_15px_40px_-5px_rgba(16,185,129,0.65)]
+             hover:scale-110 active:scale-95
+             transition-all duration-300
+             flex items-center justify-center"
+            aria-label="Calculator"
+>
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="4" y="2" width="16" height="20" rx="2" />
+    <line x1="8" y1="6" x2="16" y2="6" />
+    <line x1="8" y1="10" x2="8" y2="10.01" />
+    <line x1="12" y1="10" x2="12" y2="10.01" />
+    <line x1="16" y1="10" x2="16" y2="10.01" />
+    <line x1="8" y1="14" x2="8" y2="14.01" />
+    <line x1="12" y1="14" x2="12" y2="14.01" />
+    <line x1="16" y1="14" x2="16" y2="14.01" />
+    <line x1="8" y1="18" x2="8" y2="18.01" />
+    <line x1="12" y1="18" x2="16" y2="18" />
+  </svg>
+</button>
 
       {/* Calculator window */}
       {open && (

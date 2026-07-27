@@ -9,21 +9,21 @@ interface BudgetProgressProps {
 export default function BudgetProgress({ spent, budget, showAlert = false }: BudgetProgressProps) {
   const pct = Math.min((spent / budget) * 100, 100);
   const remaining = budget - spent;
-  const barColor = pct > 90 ? "bg-red-500" : pct > 70 ? "bg-yellow-500" : "bg-green-500";
+  const barColor = pct > 90 ? "bg-red-500" : pct > 70 ? "bg-yellow-500" : "bg-emerald-400";
 
   return (
     <div>
       {showAlert && pct >= 100 && (
-        <div className="bg-red-50 border border-red-200 text-red-700 text-sm p-3 rounded-md mb-3">
+        <div className="bg-red-500/10 border border-red-500/20 text-red-200 text-sm p-3 rounded-lg mb-3">
           Budget exceeded! You are ${Math.abs(remaining).toFixed(2)} over your ${budget.toFixed(2)} budget.
         </div>
       )}
       {showAlert && pct >= 80 && pct < 100 && (
-        <div className="bg-yellow-50 border border-yellow-200 text-yellow-700 text-sm p-3 rounded-md mb-3">
+        <div className="bg-amber-500/10 border border-amber-500/20 text-amber-300 text-sm p-3 rounded-lg mb-3">
           Warning: You&apos;ve used {pct.toFixed(0)}% of your budget. Only ${remaining.toFixed(2)} remaining.
         </div>
       )}
-      <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
+      <div className="h-3 bg-white/10 rounded-full overflow-hidden">
         <div
           className={`h-full rounded-full transition-all ${barColor}`}
           style={{ width: `${pct}%` }}

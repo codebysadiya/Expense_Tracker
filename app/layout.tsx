@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Plus_Jakarta_Sans, Geist_Mono } from "next/font/google";
+import { Plus_Jakarta_Sans, Merriweather, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
 import Navbar from "@/components/Navbar";
@@ -10,6 +10,12 @@ const plusJakartaSans = Plus_Jakarta_Sans({
   variable: "--font-geist-sans",
   subsets: ["latin"],
   weight: ["300", "400", "500", "600", "700", "800"],
+});
+
+const merriweather = Merriweather({
+  variable: "--font-heading",
+  subsets: ["latin"],
+  weight: ["300", "400", "700", "900"],
 });
 
 const geistMono = Geist_Mono({
@@ -40,9 +46,9 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${plusJakartaSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${plusJakartaSans.variable} ${merriweather.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-black text-white antialiased">
+      <body className="min-h-full flex flex-col bg-black text-white">
         <AuthProvider>
           <Navbar />
           <main className="flex-1">{children}</main>

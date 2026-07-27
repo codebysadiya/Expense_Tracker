@@ -39,6 +39,7 @@ export default function ExpensesPage() {
   } | null>(null);
 
   const [open, setOpen] = useState(false);
+  const [monthOpen, setMonthOpen] = useState(false)
   const filterDropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -195,9 +196,9 @@ export default function ExpensesPage() {
     />
 
     {/* HEADER */}
-    <div className="flex items-center justify-between mb-8">
+    <div className="flex items-center justify-between gap-4 mb-8">
 
-      <h1 className="text-3xl font-bold bg-gradient-to-r from-emerald-300 via-cyan-300 to-purple-400 text-transparent bg-clip-text tracking-tight">
+      <h1 className="font-heading text-3xl font-bold bg-gradient-to-r from-emerald-300 via-cyan-300 to-purple-400 text-transparent bg-clip-text tracking-tight">
         Expenses
       </h1>
 
@@ -211,7 +212,7 @@ export default function ExpensesPage() {
           onExportFullPDF={() => { throw new Error("Function not implemented."); }}
         />
 
-        {/* ✨ IMPROVED ADD BUTTON */}
+        {/*  IMPROVED ADD BUTTON */}
         <button
           onClick={() => { setEditingExpense(null); setShowForm(true); }}
           className="relative px-5 py-2.5 rounded-xl text-sm font-semibold text-black
@@ -241,59 +242,71 @@ export default function ExpensesPage() {
     )}
 
     {/* LAYOUT */}
-    <div className="flex flex-col md:flex-row gap-6">
+<div className="flex flex-col md:flex-row gap-6">
 
-      {/* SIDEBAR */}
-      <div className="md:w-56 shrink-0">
-        <div className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl shadow-xl overflow-hidden">
+  {/* SIDEBAR */}
+  <div className="md:w-56 shrink-0">
+    <div className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl shadow-xl overflow-hidden">
 
-          <div className="px-4 py-3 border-b border-white/10 bg-white/5">
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
-              Filter by Month
-            </p>
-          </div>
+      <button
+        onClick={() => setMonthOpen((prev) => !prev)}
+        className="w-full px-4 py-3 border-b border-white/10 bg-white/5 flex items-center justify-between md:pointer-events-none"
+      >
+        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+          Filter by Month
+        </p>
+        <span className="text-gray-400 transition-transform md:hidden">
+          {monthOpen ? "▴" : "▾"}
+        </span>
+      </button>
 
-          <div className="max-h-96 overflow-y-auto">
+      <div className={`${monthOpen ? "block" : "hidden"} md:block max-h-96 overflow-y-auto`}>
 
+        <button
+          onClick={() => {
+            setSelectedMonth("all");
+            setMonthOpen(false);
+          }}
+          className={`w-full text-left px-4 py-3 text-sm transition flex items-center justify-between ${
+            selectedMonth === "all"
+              ? "bg-white/10 text-emerald-300 border-l-2 border-emerald-400"
+              : "text-gray-300 hover:bg-white/5"
+          }`}
+        >
+          All Time
+        </button>
+
+        {months.map((m) => {
+          const over = isOverBudget(m);
+          const active = m === selectedMonth;
+
+          return (
             <button
-              onClick={() => setSelectedMonth("all")}
+              key={m}
+              onClick={() => {
+                setSelectedMonth(m);
+                setMonthOpen(false);
+              }}
               className={`w-full text-left px-4 py-3 text-sm transition flex items-center justify-between ${
-                selectedMonth === "all"
+                active
                   ? "bg-white/10 text-emerald-300 border-l-2 border-emerald-400"
                   : "text-gray-300 hover:bg-white/5"
               }`}
             >
-              All Time
+              <span>{format(new Date(m + "-01"), "MMM yyyy")}</span>
+
+              {over && (
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-red-500/20 text-red-300 border border-red-500/30">
+                  Over
+                </span>
+              )}
             </button>
+          );
+        })}
 
-            {months.map((m) => {
-              const over = isOverBudget(m);
-              const active = m === selectedMonth;
-
-              return (
-                <button
-                  key={m}
-                  onClick={() => setSelectedMonth(m)}
-                  className={`w-full text-left px-4 py-3 text-sm transition flex items-center justify-between ${
-                    active
-                      ? "bg-white/10 text-emerald-300 border-l-2 border-emerald-400"
-                      : "text-gray-300 hover:bg-white/5"
-                  }`}
-                >
-                  <span>{format(new Date(m + "-01"), "MMM yyyy")}</span>
-
-                  {over && (
-                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-red-500/20 text-red-300 border border-red-500/30">
-                      Over
-                    </span>
-                  )}
-                </button>
-              );
-            })}
-
-          </div>
-        </div>
       </div>
+    </div>
+  </div>
 
       {/* MAIN */}
       <div className="flex-1 min-w-0">

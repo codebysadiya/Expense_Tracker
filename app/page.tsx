@@ -58,7 +58,7 @@ export default function Home() {
       {/* CENTER CONTENT */}
       <div className="relative z-10 text-center max-w-xl">
         
-        <h1 className="text-6xl md:text-7xl font-extrabold mb-6 leading-tight bg-gradient-to-r from-emerald-400 via-teal-300 to-purple-400 text-transparent bg-clip-text">
+        <h1 className="font-heading text-6xl md:text-7xl font-extrabold mb-6 leading-tight bg-gradient-to-r from-emerald-400 via-teal-300 to-purple-400 text-transparent bg-clip-text">
           ExpenseAI
         </h1>
 

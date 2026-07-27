@@ -46,7 +46,7 @@ export default function Navbar() {
           {/* Logo */}
           <Link
             href="/dashboard"
-            className="text-xl font-bold bg-gradient-to-r from-emerald-400 to-purple-400 text-transparent bg-clip-text mr-6"
+            className="font-heading text-xl font-bold bg-gradient-to-r from-emerald-400 to-purple-400 text-transparent bg-clip-text mr-6"
           >
             ExpenseAI
           </Link>

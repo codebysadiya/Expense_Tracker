@@ -131,7 +131,7 @@ export default function SavingsPage() {
     <div className="flex items-center justify-between mb-8">
 
       <div>
-        <h1 className="text-3xl font-bold bg-linear-to-r from-emerald-400 via-cyan-400 to-purple-500 text-transparent bg-clip-text">
+        <h1 className="font-heading text-3xl font-bold bg-linear-to-r from-emerald-400 via-cyan-400 to-purple-500 text-transparent bg-clip-text">
           Savings Goals
         </h1>
 

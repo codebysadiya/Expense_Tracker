@@ -146,7 +146,7 @@ export default function DashboardPage() {
 
       {/* HEADER */}
       <div className="flex items-center justify-between mb-10">
-        <h1 className="text-4xl font-extrabold bg-gradient-to-r from-emerald-400 via-teal-300 to-purple-400 bg-clip-text text-transparent animate-gradient-x">
+        <h1 className="font-heading text-4xl font-extrabold bg-gradient-to-r from-emerald-400 via-teal-300 to-purple-400 bg-clip-text text-transparent animate-gradient-x">
           Financial Dashboard
         </h1>
 
@@ -221,11 +221,10 @@ export default function DashboardPage() {
                 nameKey="name"
                 cx="50%"
                 cy="50%"
-                outerRadius={85}   
+                outerRadius={75}   
                 label={({  percent }) =>
                   `(${((percent ?? 0) * 100).toFixed(0)}%)`
                 }
-                labelLine={false}
               >
                 {categoryData.map((entry, index) => (
                   <Cell key={index} fill={COLORS[index % COLORS.length]} />
@@ -250,10 +249,20 @@ export default function DashboardPage() {
               />
 
               <Legend
-              verticalAlign="bottom"
-              height={36}
-              formatter={(value) => <span className="text-sm text-gray-300">{value}</span>}
-            />
+                verticalAlign="bottom"
+                height={50}
+                iconSize={10}
+                wrapperStyle={{
+                  fontSize: "12px",
+                  paddingTop: "8px",
+                  display: "flex",
+                  flexWrap: "wrap",
+                  justifyContent: "center",
+                  rowGap: "4px",
+                  columnGap: "10px",
+                }}
+                formatter={(value) => <span className="text-xs text-gray-300">{value}</span>}
+              />
 
             </PieChart>
           </ResponsiveContainer>
@@ -262,9 +271,17 @@ export default function DashboardPage() {
         <div className="bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-xl shadow-lg hover:shadow-purple-500/10 transition">
           <h2 className="text-lg font-semibold mb-4 text-white">Monthly Trend</h2>
           <ResponsiveContainer width="100%" height={260}>
-            <BarChart data={trendData}>
+            <BarChart data={trendData} margin={{ bottom: 20 }}>
 
-              <XAxis dataKey="month" stroke="#aaa" />
+              <XAxis
+                dataKey="month"
+                stroke="#aaa"
+                interval={0}
+                angle={-45}
+                textAnchor="end"
+                height={50}
+                tick={{ fontSize: 10 }}
+              />
               <YAxis stroke="#aaa" />
 
               <Tooltip

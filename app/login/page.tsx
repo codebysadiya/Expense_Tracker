@@ -57,7 +57,7 @@ export default function LoginPage() {
       <div className="relative z-10 w-full max-w-md backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl shadow-2xl p-8">
 
         {/* Title */}
-        <h1 className="text-3xl font-bold text-center mb-2 bg-gradient-to-r from-emerald-400 via-teal-300 to-purple-400 text-transparent bg-clip-text">
+        <h1 className="font-heading text-3xl font-bold text-center mb-2 bg-gradient-to-r from-emerald-400 via-teal-300 to-purple-400 text-transparent bg-clip-text">
           Welcome Back
         </h1>
 
